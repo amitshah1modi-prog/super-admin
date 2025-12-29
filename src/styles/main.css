@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #fff;
+}
+
+.container {
+  padding: 20px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #334155;
+  padding: 10px;
+  text-align: left;
+}
+
+.admin-table th {
+  background: #1e293b;
+}
+
+.status {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.status.active {
+  background: #16a34a;
+}
+
+.status.inactive {
+  background: #dc2626;
+}
+
+.loader {
+  margin-top: 20px;
+  font-size: 18px;
+}
