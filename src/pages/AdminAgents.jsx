@@ -23,7 +23,7 @@ function AdminAgents() {
       .eq("admin_id", adminId);
 
     if (error) {
-      console.error("Error fetching agents:", error);
+      console.error(error);
     } else {
       setAgents(data || []);
     }
@@ -31,51 +31,32 @@ function AdminAgents() {
     setLoading(false);
   }
 
-  function goToAgentHistory(agentId) {
-    navigate(`/admin/${adminId}/agent/${agentId}/history`);
-  }
-
   return (
     <div className="container">
-      <h2>Agents for Admin ID: {adminId}</h2>
+      <h2>Agents for Admin: {adminId}</h2>
 
       {loading ? (
         <Loader />
       ) : agents.length === 0 ? (
         <p>No agents found</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul>
           {agents.map((agent) => (
             <li
               key={agent.agent_id}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 16px",
-                marginBottom: "10px",
-                background: "#f8fafc",
-                borderRadius: "8px",
-                border: "1px solid #e2e8f0",
+                padding: "10px",
+                borderBottom: "1px solid #ddd",
+                cursor: "pointer",
               }}
+              onClick={() =>
+                navigate(`/admin/${adminId}/agent/${agent.agent_id}`)
+              }
             >
-              <span style={{ fontWeight: "600" }}>
-                Agent ID: {agent.agent_id}
-              </span>
-
-              {/* 👉 ARROW BUTTON */}
-              <button
-                onClick={() => goToAgentHistory(agent.agent_id)}
-                style={{
-                  cursor: "pointer",
-                  fontSize: "18px",
-                  border: "none",
-                  background: "transparent",
-                }}
-                title="View Agent History"
-              >
-                →
-              </button>
+              <span>{agent.agent_id}</span>
+              <span>➡️</span>
             </li>
           ))}
         </ul>
