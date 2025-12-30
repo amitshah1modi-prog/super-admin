@@ -35,6 +35,17 @@ function Sidebar() {
         </NavLink>
 
         <NavLink
+  to="/admin-report"
+  style={({ isActive }) => ({
+    color: isActive ? "#38bdf8" : "white",
+    textDecoration: "none",
+  })}
+>
+  Admin Report
+</NavLink>
+
+
+        <NavLink
           to="/hello"
           style={({ isActive }) => ({
             color: isActive ? "#38bdf8" : "white",
