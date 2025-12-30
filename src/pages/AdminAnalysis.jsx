@@ -4,18 +4,18 @@ import { supabase } from "../lib/supabase";
 function AdminAnalysis() {
   const [adminId, setAdminId] = useState("");
   const [date, setDate] = useState("");
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSearch() {
     if (!adminId || !date) {
-      alert("Please enter Admin ID and Date");
+      alert("Admin ID and Date both required");
       return;
     }
 
     setLoading(true);
-    setErrorMsg("");
+    setError("");
     setResult(null);
 
     const { data, error } = await supabase
@@ -23,13 +23,14 @@ function AdminAnalysis() {
       .select("login_time, logout_time")
       .eq("admin_id", adminId)
       .eq("date", date)
+      .order("login_time", { ascending: false })
       .limit(1);
 
     if (error) {
       console.error(error);
-      setErrorMsg("Error fetching data");
+      setError("Error fetching data");
     } else if (data.length === 0) {
-      setErrorMsg("No record found for this Admin & Date");
+      setError("No record found");
     } else {
       setResult(data[0]);
     }
@@ -38,14 +39,12 @@ function AdminAnalysis() {
   }
 
   return (
-    <div className="page">
-      <h2>Admin Analysis</h2>
+    <div style={{ padding: "30px" }}>
+      <h1>Admin Analysis</h1>
 
-      {/* SEARCH BAR */}
-      <div className="search-box">
+      <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
         <input
-          type="text"
-          placeholder="Enter Admin ID"
+          placeholder="Admin ID"
           value={adminId}
           onChange={(e) => setAdminId(e.target.value)}
         />
@@ -59,13 +58,18 @@ function AdminAnalysis() {
         <button onClick={handleSearch}>Search</button>
       </div>
 
-      {/* RESULTS */}
       {loading && <p>Loading...</p>}
-
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {result && (
-        <div className="result-box">
+        <div
+          style={{
+            background: "#f1f5f9",
+            padding: "20px",
+            borderRadius: "8px",
+            width: "300px",
+          }}
+        >
           <p><b>Login Time:</b> {result.login_time}</p>
           <p><b>Logout Time:</b> {result.logout_time}</p>
         </div>
