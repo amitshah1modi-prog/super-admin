@@ -11,7 +11,7 @@ function AdminReport() {
 
   async function handleSearch() {
     if (!adminId || !fromDate || !toDate) {
-      alert("Admin ID and date range required");
+      alert("Admin ID and Date Range required");
       return;
     }
 
@@ -19,66 +19,75 @@ function AdminReport() {
     setError("");
     setRows([]);
 
-    /* 1️⃣ ADMIN DETAILS (date wise) */
-    const { data: adminData, error: adminError } = await supabase
-      .from("admin_details")
-      .select("date, login_time, logout_time")
-      .eq("admin_id", adminId)
-      .gte("date", fromDate)
-      .lte("date", toDate)
-      .order("date", { ascending: true });
+    try {
+      /* 1️⃣ Fetch admin login/logout data */
+      const { data: adminData, error: adminError } = await supabase
+        .from("admin_details")
+        .select("date, login_time, logout_time")
+        .eq("admin_id", adminId)
+        .gte("date", fromDate)
+        .lte("date", toDate)
+        .order("date");
 
-    if (adminError) {
-      setError("Error fetching admin details");
-      setLoading(false);
-      return;
+      if (adminError) throw adminError;
+
+      if (!adminData || adminData.length === 0) {
+        setError("No records found");
+        setLoading(false);
+        return;
+      }
+
+      /* 2️⃣ For each date → fetch agent totals */
+      const finalRows = [];
+
+      for (const row of adminData) {
+        const { data: agentData, error: agentError } = await supabase
+          .from("agent_details")
+          .select(`
+            normal_order,
+            schedule_order,
+            assign_orderr,
+            app_intent,
+            employee_cancel,
+            customer_cancel
+          `)
+          .eq("admin_id", adminId)
+          .eq("date", row.date);
+
+        if (agentError) throw agentError;
+
+        const totals = {
+          normal_order: 0,
+          schedule_order: 0,
+          assign_orderr: 0,
+          app_intent: 0,
+          employee_cancel: 0,
+          customer_cancel: 0,
+        };
+
+        agentData.forEach((a) => {
+          totals.normal_order += a.normal_order || 0;
+          totals.schedule_order += a.schedule_order || 0;
+          totals.assign_orderr += a.assign_orderr || 0;
+          totals.app_intent += a.app_intent || 0;
+          totals.employee_cancel += a.employee_cancel || 0;
+          totals.customer_cancel += a.customer_cancel || 0;
+        });
+
+        finalRows.push({
+          date: row.date,
+          login_time: row.login_time,
+          logout_time: row.logout_time,
+          ...totals,
+        });
+      }
+
+      setRows(finalRows);
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong");
     }
 
-    /* 2️⃣ AGENT DETAILS (group by date & SUM) */
-    const { data: agentData, error: agentError } = await supabase
-      .from("agent_details")
-      .select(`
-        date,
-        normal_order,
-        schedule_order,
-        assign_orderr,
-        app_intent,
-        employee_cancel,
-        customer_cancel
-      `)
-      .eq("admin_id", adminId)
-      .gte("date", fromDate)
-      .lte("date", toDate);
-
-    if (agentError) {
-      setError("Error fetching agent details");
-      setLoading(false);
-      return;
-    }
-
-    /* 3️⃣ MERGE BOTH DATA BY DATE */
-    const merged = adminData.map((adminRow) => {
-      const sameDateAgents = agentData.filter(
-        (a) => a.date === adminRow.date
-      );
-
-      const sum = (key) =>
-        sameDateAgents.reduce((t, r) => t + (r[key] || 0), 0);
-
-      return {
-        date: adminRow.date,
-        login_time: adminRow.login_time,
-        logout_time: adminRow.logout_time,
-        normal_order: sum("normal_order"),
-        schedule_order: sum("schedule_order"),
-        assign_orderr: sum("assign_orderr"),
-        app_intent: sum("app_intent"),
-        employee_cancel: sum("employee_cancel"),
-        customer_cancel: sum("customer_cancel"),
-      };
-    });
-
-    setRows(merged);
     setLoading(false);
   }
 
@@ -86,7 +95,7 @@ function AdminReport() {
     <div style={{ padding: "30px" }}>
       <h1>Admin Report</h1>
 
-      {/* FILTER BAR */}
+      {/* SEARCH BAR */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <input
           placeholder="Admin ID"
@@ -106,32 +115,60 @@ function AdminReport() {
           onChange={(e) => setToDate(e.target.value)}
         />
 
-        <button onClick={handleSearch}>Search</button>
+        <button
+          onClick={handleSearch}
+          disabled={loading}
+          style={{
+            padding: "6px 14px",
+            background: loading ? "#94a3b8" : "#0ea5e9",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: loading ? "not-allowed" : "pointer",
+            transition: "all 0.3s",
+          }}
+        >
+          {loading ? "Searching..." : "Search"}
+        </button>
       </div>
 
-      {loading && <p>Loading...</p>}
+      {/* ERROR */}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
+      {/* LOADING ANIMATION */}
+      {loading && (
+        <div style={{ marginTop: "20px", fontWeight: "600" }}>
+          🔄 Fetching report data...
+        </div>
+      )}
+
       {/* TABLE */}
-      {rows.length > 0 && (
-        <table border="1" cellPadding="8">
-          <thead>
+      {!loading && rows.length > 0 && (
+        <table
+          border="1"
+          cellPadding="8"
+          style={{
+            borderCollapse: "collapse",
+            marginTop: "20px",
+            width: "100%",
+          }}
+        >
+          <thead style={{ background: "#e2e8f0" }}>
             <tr>
               <th>Date</th>
               <th>Login</th>
               <th>Logout</th>
               <th>Normal</th>
-              <th>Scheduled</th>
-              <th>Assigned</th>
+              <th>Schedule</th>
+              <th>Assign</th>
               <th>App Intent</th>
               <th>Emp Cancel</th>
               <th>Cust Cancel</th>
             </tr>
           </thead>
-
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.date}>
+            {rows.map((r, i) => (
+              <tr key={i}>
                 <td>{r.date}</td>
                 <td>{r.login_time}</td>
                 <td>{r.logout_time}</td>
