@@ -4,6 +4,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import Hello from "./pages/Hello";
 import AdminAgents from "./pages/AdminAgents";
 import AgentHistoryPage from "./pages/AgentHistoryPage";
+import AdminAnalysis from "./pages/AdminAnalysis";
 
 function App() {
   return (
@@ -11,6 +12,8 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<SuperAdmin />} />
         <Route path="/hello" element={<Hello />} />
+        <Route path="/analysis" element={<AdminAnalysis />} />
+
         <Route path="/admin/:adminId" element={<AdminAgents />} />
         <Route
           path="/admin/:adminId/agent/:agentId"
