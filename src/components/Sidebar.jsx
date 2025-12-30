@@ -8,6 +8,7 @@ function Sidebar() {
         background: "#020617",
         color: "white",
         padding: "20px",
+        height: "100vh",
       }}
     >
       <h3 style={{ marginBottom: "20px" }}>Menu</h3>
@@ -21,6 +22,16 @@ function Sidebar() {
           })}
         >
           Super Admin
+        </NavLink>
+
+        <NavLink
+          to="/analysis"
+          style={({ isActive }) => ({
+            color: isActive ? "#38bdf8" : "white",
+            textDecoration: "none",
+          })}
+        >
+          Admin Analysis
         </NavLink>
 
         <NavLink
