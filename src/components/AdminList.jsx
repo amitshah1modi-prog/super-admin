@@ -1,24 +1,30 @@
+import { useNavigate } from "react-router-dom";
+
 function AdminList({ admins }) {
+  const navigate = useNavigate();
+
   return (
-    <table className="admin-table">
+    <table>
       <thead>
         <tr>
           <th>Admin ID</th>
           <th>Status</th>
+          <th>View Agents</th>
         </tr>
       </thead>
+
       <tbody>
         {admins.map((admin) => (
           <tr key={admin.admin_id}>
             <td>{admin.admin_id}</td>
+            <td>{admin.state}</td>
             <td>
-              <span
-                className={
-                  admin.state === "active" ? "status active" : "status inactive"
-                }
+              <button
+                onClick={() => navigate(`/admin/${admin.admin_id}`)}
+                style={{ cursor: "pointer" }}
               >
-                {admin.state}
-              </span>
+                ➡
+              </button>
             </td>
           </tr>
         ))}
