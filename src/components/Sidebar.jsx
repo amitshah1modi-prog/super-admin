@@ -1,74 +1,104 @@
 import { NavLink } from "react-router-dom";
 
+const linkBase = {
+  padding: "12px 14px",
+  borderRadius: "10px",
+  fontSize: "14px",
+  fontWeight: "600",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  transition: "all 0.2s ease",
+};
+
 function Sidebar() {
   return (
-    <div
+    <aside
       style={{
-        width: "220px",
+        width: "240px",
         background: "#020617",
-        color: "white",
-        padding: "20px",
+        color: "#e5e7eb",
+        padding: "20px 16px",
         height: "100vh",
+        borderRight: "1px solid #0f172a",
+        boxShadow: "4px 0 14px rgba(0,0,0,0.35)",
       }}
     >
-      <h3 style={{ marginBottom: "20px" }}>Menu</h3>
+      {/* BRAND */}
+      <div style={{ marginBottom: "28px" }}>
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: "800",
+            color: "#f8fafc",
+            marginBottom: "4px",
+          }}
+        >
+          Dashboard
+        </div>
+        <div style={{ fontSize: "12px", color: "#64748b" }}>
+          Admin Controls
+        </div>
+      </div>
 
-      <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      {/* NAV */}
+      <nav style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         <NavLink
           to="/"
           style={({ isActive }) => ({
-            color: isActive ? "#38bdf8" : "white",
-            textDecoration: "none",
+            ...linkBase,
+            background: isActive ? "#0f172a" : "transparent",
+            color: isActive ? "#38bdf8" : "#e5e7eb",
           })}
         >
-          Super Admin
+          📊 Super Admin
         </NavLink>
 
         <NavLink
-  to="/agent-analysis"
-  style={({ isActive }) => ({
-    color: isActive ? "#38bdf8" : "white",
-    textDecoration: "none",
-  })}
->
-  Agent Wise Analysis
-</NavLink>
-
-
-        
+          to="/agent-analysis"
+          style={({ isActive }) => ({
+            ...linkBase,
+            background: isActive ? "#0f172a" : "transparent",
+            color: isActive ? "#38bdf8" : "#e5e7eb",
+          })}
+        >
+          👤 Agent Wise Analysis
+        </NavLink>
 
         <NavLink
           to="/analysis"
           style={({ isActive }) => ({
-            color: isActive ? "#38bdf8" : "white",
-            textDecoration: "none",
+            ...linkBase,
+            background: isActive ? "#0f172a" : "transparent",
+            color: isActive ? "#38bdf8" : "#e5e7eb",
           })}
         >
-          Admin Analysis
+          📈 Admin Analysis
         </NavLink>
 
         <NavLink
-  to="/admin-report"
-  style={({ isActive }) => ({
-    color: isActive ? "#38bdf8" : "white",
-    textDecoration: "none",
-  })}
->
-  Admin Report
-</NavLink>
-
+          to="/admin-report"
+          style={({ isActive }) => ({
+            ...linkBase,
+            background: isActive ? "#0f172a" : "transparent",
+            color: isActive ? "#38bdf8" : "#e5e7eb",
+          })}
+        >
+          📄 Admin Report
+        </NavLink>
 
         <NavLink
           to="/hello"
           style={({ isActive }) => ({
-            color: isActive ? "#38bdf8" : "white",
-            textDecoration: "none",
+            ...linkBase,
+            background: isActive ? "#0f172a" : "transparent",
+            color: isActive ? "#38bdf8" : "#e5e7eb",
           })}
         >
-          Hello Page
+          👋 Hello Page
         </NavLink>
       </nav>
-    </div>
+    </aside>
   );
 }
 
