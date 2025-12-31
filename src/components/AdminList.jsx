@@ -6,118 +6,144 @@ function AdminList({ admins }) {
   return (
     <div
       style={{
-        maxWidth: "900px",
-        margin: "0 auto",
         background: "#ffffff",
-        borderRadius: "16px",
+        borderRadius: "14px",
         boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-        padding: "24px",
+        overflow: "hidden",
       }}
     >
-      {/* HEADER */}
-      <div style={{ marginBottom: "20px" }}>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: "22px",
-            fontWeight: "700",
-            color: "#0f172a",
-          }}
-        >
-          Admin Overview
-        </h2>
-        <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: "14px" }}>
-          List of all available admins and their current status
-        </p>
+      {/* TABLE HEADER */}
+      <div
+        style={{
+          padding: "18px 22px",
+          borderBottom: "1px solid #e5e7eb",
+          fontSize: "18px",
+          fontWeight: "700",
+          color: "#0f172a",
+        }}
+      >
+        Admin Overview
       </div>
 
-      {/* LIST */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {admins.map((admin) => {
-          const isActive = admin.state === "active";
-
-          return (
-            <div
-              key={admin.admin_id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                borderRadius: "12px",
-                border: "1px solid #e5e7eb",
-                background: "#f8fafc",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {/* LEFT */}
-              <div>
-                <div
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color: "#020617",
-                  }}
-                >
-                  Admin ID: {admin.admin_id}
-                </div>
-
-                <span
-                  style={{
-                    display: "inline-block",
-                    marginTop: "6px",
-                    padding: "4px 10px",
-                    borderRadius: "999px",
-                    fontSize: "12px",
-                    fontWeight: "700",
-                    color: isActive ? "#065f46" : "#7f1d1d",
-                    backgroundColor: isActive ? "#dcfce7" : "#fee2e2",
-                  }}
-                >
-                  {isActive ? "ACTIVE" : "INACTIVE"}
-                </span>
-              </div>
-
-              {/* RIGHT */}
-              <button
-                onClick={() => navigate(`/admin/${admin.admin_id}`)}
-                style={{
-                  background: "#0f172a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  fontWeight: "700",
-                  transition: "all 0.2s",
-                }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundColor = "#1e293b")
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundColor = "#0f172a")
-                }
-              >
-                →
-              </button>
-            </div>
-          );
-        })}
-
-        {admins.length === 0 && (
-          <div
+      {/* TABLE */}
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+        }}
+      >
+        <thead>
+          <tr
             style={{
-              textAlign: "center",
-              padding: "40px",
-              color: "#64748b",
-              fontSize: "14px",
+              background: "#f8fafc",
+              textAlign: "left",
+              fontSize: "13px",
+              color: "#475569",
             }}
           >
-            No admins found
-          </div>
-        )}
-      </div>
+            <th style={{ padding: "14px 22px" }}>ADMIN ID</th>
+            <th style={{ padding: "14px 22px" }}>STATUS</th>
+            <th style={{ padding: "14px 22px", textAlign: "center" }}>
+              ACTION
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {admins.map((admin) => {
+            const isActive = admin.state === "active";
+
+            return (
+              <tr
+                key={admin.admin_id}
+                style={{
+                  borderBottom: "1px solid #e5e7eb",
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#f8fafc")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+              >
+                {/* ADMIN ID */}
+                <td
+                  style={{
+                    padding: "16px 22px",
+                    fontWeight: "600",
+                    color: "#0f172a",
+                  }}
+                >
+                  {admin.admin_id}
+                </td>
+
+                {/* STATUS */}
+                <td style={{ padding: "16px 22px" }}>
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "999px",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      color: isActive ? "#065f46" : "#7f1d1d",
+                      background: isActive ? "#dcfce7" : "#fee2e2",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {admin.state}
+                  </span>
+                </td>
+
+                {/* ACTION */}
+                <td
+                  style={{
+                    padding: "16px 22px",
+                    textAlign: "center",
+                  }}
+                >
+                  <button
+                    onClick={() => navigate(`/admin/${admin.admin_id}`)}
+                    style={{
+                      background: "#0ea5e9",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.target.style.background = "#0284c7")
+                    }
+                    onMouseOut={(e) =>
+                      (e.target.style.background = "#0ea5e9")
+                    }
+                  >
+                    View →
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* EMPTY STATE */}
+      {admins.length === 0 && (
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+            color: "#64748b",
+            fontSize: "14px",
+          }}
+        >
+          No admins found
+        </div>
+      )}
     </div>
   );
 }
