@@ -6,165 +6,120 @@ function AdminList({ admins }) {
   return (
     <div
       style={{
+        maxWidth: "900px",
+        margin: "0 auto",
         background: "#ffffff",
         borderRadius: "16px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
         padding: "24px",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-        overflowX: "auto",
       }}
     >
       {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
+      <div style={{ marginBottom: "20px" }}>
         <h2
           style={{
+            margin: 0,
             fontSize: "22px",
             fontWeight: "700",
             color: "#0f172a",
           }}
         >
-          Admins Overview
+          Admin Overview
         </h2>
-
-        <span
-          style={{
-            fontSize: "14px",
-            color: "#64748b",
-            fontWeight: "500",
-          }}
-        >
-          Total Admins: {admins.length}
-        </span>
+        <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: "14px" }}>
+          List of all available admins and their current status
+        </p>
       </div>
 
-      {/* TABLE */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "separate",
-          borderSpacing: "0 10px",
-        }}
-      >
-        <thead>
-          <tr>
-            <th style={thStyle}>Admin ID</th>
-            <th style={thStyle}>Status</th>
-            <th style={thStyle}>Action</th>
-          </tr>
-        </thead>
+      {/* LIST */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {admins.map((admin) => {
+          const isActive = admin.state === "active";
 
-        <tbody>
-          {admins.map((admin) => {
-            const isActive = admin.state === "active";
+          return (
+            <div
+              key={admin.admin_id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                borderRadius: "12px",
+                border: "1px solid #e5e7eb",
+                background: "#f8fafc",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {/* LEFT */}
+              <div>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    color: "#020617",
+                  }}
+                >
+                  Admin ID: {admin.admin_id}
+                </div>
 
-            return (
-              <tr
-                key={admin.admin_id}
+                <span
+                  style={{
+                    display: "inline-block",
+                    marginTop: "6px",
+                    padding: "4px 10px",
+                    borderRadius: "999px",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    color: isActive ? "#065f46" : "#7f1d1d",
+                    backgroundColor: isActive ? "#dcfce7" : "#fee2e2",
+                  }}
+                >
+                  {isActive ? "ACTIVE" : "INACTIVE"}
+                </span>
+              </div>
+
+              {/* RIGHT */}
+              <button
+                onClick={() => navigate(`/admin/${admin.admin_id}`)}
                 style={{
-                  background: "#f8fafc",
-                  borderRadius: "12px",
+                  background: "#0f172a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  fontWeight: "700",
+                  transition: "all 0.2s",
                 }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#1e293b")
+                }
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "#0f172a")
+                }
               >
-                {/* ADMIN ID */}
-                <td style={tdStyle}>
-                  <span
-                    style={{
-                      fontWeight: "700",
-                      color: "#0f172a",
-                    }}
-                  >
-                    {admin.admin_id}
-                  </span>
-                </td>
+                →
+              </button>
+            </div>
+          );
+        })}
 
-                {/* STATUS */}
-                <td style={tdStyle}>
-                  <span
-                    style={{
-                      padding: "6px 12px",
-                      borderRadius: "999px",
-                      fontSize: "13px",
-                      fontWeight: "700",
-                      background: isActive ? "#dcfce7" : "#fee2e2",
-                      color: isActive ? "#166534" : "#991b1b",
-                    }}
-                  >
-                    {admin.state.toUpperCase()}
-                  </span>
-                </td>
-
-                {/* ACTION */}
-                <td style={tdStyle}>
-                  <button
-                    onClick={() =>
-                      navigate(`/admin/${admin.admin_id}`)
-                    }
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      background: "#0f172a",
-                      color: "white",
-                      border: "none",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontWeight: "600",
-                      fontSize: "14px",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.background = "#1e293b")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.background = "#0f172a")
-                    }
-                  >
-                    View Agents →
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      {/* EMPTY STATE */}
-      {admins.length === 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "60px 0",
-            color: "#64748b",
-            fontSize: "15px",
-          }}
-        >
-          No admins found
-        </div>
-      )}
+        {admins.length === 0 && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#64748b",
+              fontSize: "14px",
+            }}
+          >
+            No admins found
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-/* 🔹 SHARED STYLES */
-const thStyle = {
-  textAlign: "left",
-  padding: "12px",
-  fontSize: "13px",
-  fontWeight: "700",
-  color: "#475569",
-  textTransform: "uppercase",
-};
-
-const tdStyle = {
-  padding: "14px 12px",
-  fontSize: "14px",
-};
 
 export default AdminList;
