@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import * as XLSX from "xlsx";
 
 function AdminReport() {
   const [adminId, setAdminId] = useState("");
@@ -19,7 +20,7 @@ function AdminReport() {
     setError("");
     setRows([]);
 
-    /* 1️⃣ ADMIN DETAILS (date wise) */
+    /* 1️⃣ ADMIN DETAILS */
     const { data: adminData, error: adminError } = await supabase
       .from("admin_details")
       .select("date, login_time, logout_time")
@@ -34,7 +35,7 @@ function AdminReport() {
       return;
     }
 
-    /* 2️⃣ AGENT DETAILS (group by date & SUM) */
+    /* 2️⃣ AGENT DETAILS */
     const { data: agentData, error: agentError } = await supabase
       .from("agent_details")
       .select(`
@@ -56,7 +57,7 @@ function AdminReport() {
       return;
     }
 
-    /* 3️⃣ MERGE BOTH DATA BY DATE */
+    /* 3️⃣ MERGE DATA DATE-WISE */
     const merged = adminData.map((adminRow) => {
       const sameDateAgents = agentData.filter(
         (a) => a.date === adminRow.date
@@ -66,20 +67,34 @@ function AdminReport() {
         sameDateAgents.reduce((t, r) => t + (r[key] || 0), 0);
 
       return {
-        date: adminRow.date,
-        login_time: adminRow.login_time,
-        logout_time: adminRow.logout_time,
-        normal_order: sum("normal_order"),
-        schedule_order: sum("schedule_order"),
-        assign_orderr: sum("assign_orderr"),
-        app_intent: sum("app_intent"),
-        employee_cancel: sum("employee_cancel"),
-        customer_cancel: sum("customer_cancel"),
+        Date: adminRow.date,
+        "Login Time": adminRow.login_time,
+        "Logout Time": adminRow.logout_time,
+        "Normal Orders": sum("normal_order"),
+        "Scheduled Orders": sum("schedule_order"),
+        "Assigned Orders": sum("assign_orderr"),
+        "App Intent": sum("app_intent"),
+        "Employee Cancel": sum("employee_cancel"),
+        "Customer Cancel": sum("customer_cancel"),
       };
     });
 
     setRows(merged);
     setLoading(false);
+  }
+
+  /* ⬇️ XLSX DOWNLOAD */
+  function downloadExcel() {
+    if (!rows.length) return;
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Admin Report");
+
+    XLSX.writeFile(
+      workbook,
+      `admin_report_${adminId}_${fromDate}_to_${toDate}.xlsx`
+    );
   }
 
   return (
@@ -106,7 +121,25 @@ function AdminReport() {
           onChange={(e) => setToDate(e.target.value)}
         />
 
-        <button onClick={handleSearch}>Search</button>
+        <button onClick={handleSearch}>
+          {loading ? "Searching..." : "Search"}
+        </button>
+
+        {rows.length > 0 && (
+          <button
+            onClick={downloadExcel}
+            style={{
+              background: "#16a34a",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "4px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Download Excel
+          </button>
+        )}
       </div>
 
       {loading && <p>Loading...</p>}
@@ -130,17 +163,17 @@ function AdminReport() {
           </thead>
 
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.date}>
-                <td>{r.date}</td>
-                <td>{r.login_time}</td>
-                <td>{r.logout_time}</td>
-                <td>{r.normal_order}</td>
-                <td>{r.schedule_order}</td>
-                <td>{r.assign_orderr}</td>
-                <td>{r.app_intent}</td>
-                <td>{r.employee_cancel}</td>
-                <td>{r.customer_cancel}</td>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td>{r.Date}</td>
+                <td>{r["Login Time"]}</td>
+                <td>{r["Logout Time"]}</td>
+                <td>{r["Normal Orders"]}</td>
+                <td>{r["Scheduled Orders"]}</td>
+                <td>{r["Assigned Orders"]}</td>
+                <td>{r["App Intent"]}</td>
+                <td>{r["Employee Cancel"]}</td>
+                <td>{r["Customer Cancel"]}</td>
               </tr>
             ))}
           </tbody>
