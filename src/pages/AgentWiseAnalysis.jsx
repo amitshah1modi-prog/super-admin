@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function AgentWiseAnalysis() {
   const [admins, setAdmins] = useState([]);
@@ -21,11 +23,8 @@ function AgentWiseAnalysis() {
   }, []);
 
   async function fetchAdmins() {
-    const { data, error } = await supabase
-      .from("admins")
-      .select("admin_id");
-
-    if (!error) setAdmins(data || []);
+    const { data } = await supabase.from("admins").select("admin_id");
+    setAdmins(data || []);
   }
 
   /* 2️⃣ Load agents when admin changes */
@@ -35,12 +34,12 @@ function AgentWiseAnalysis() {
   }, [adminId]);
 
   async function fetchAgents() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("agents")
       .select("agent_id")
       .eq("admin_id", adminId);
 
-    if (!error) setAgents(data || []);
+    setAgents(data || []);
   }
 
   /* 3️⃣ Search */
@@ -76,13 +75,35 @@ function AgentWiseAnalysis() {
       .order("date", { ascending: true });
 
     if (error) {
-      console.error(error);
       setError("Failed to fetch data");
     } else {
       setRows(data || []);
     }
 
     setLoading(false);
+  }
+
+  /* 4️⃣ DOWNLOAD EXCEL */
+  function downloadExcel() {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Agent Analysis");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const file = new Blob([excelBuffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    saveAs(
+      file,
+      `agent_analysis_${adminId}_${agentId}_${fromDate}_to_${toDate}.xlsx`
+    );
   }
 
   return (
@@ -119,6 +140,22 @@ function AgentWiseAnalysis() {
         <button onClick={handleSearch}>
           {loading ? "Searching..." : "Search"}
         </button>
+
+        {/* DOWNLOAD BUTTON */}
+        {rows.length > 0 && (
+          <button
+            onClick={downloadExcel}
+            style={{
+              background: "#16a34a",
+              color: "white",
+              border: "none",
+              padding: "8px 14px",
+              cursor: "pointer",
+            }}
+          >
+            Download Excel
+          </button>
+        )}
       </div>
 
       {/* ERROR */}
