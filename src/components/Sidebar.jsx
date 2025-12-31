@@ -25,6 +25,19 @@ function Sidebar() {
         </NavLink>
 
         <NavLink
+  to="/agent-analysis"
+  style={({ isActive }) => ({
+    color: isActive ? "#38bdf8" : "white",
+    textDecoration: "none",
+  })}
+>
+  Agent Wise Analysis
+</NavLink>
+
+
+        
+
+        <NavLink
           to="/analysis"
           style={({ isActive }) => ({
             color: isActive ? "#38bdf8" : "white",
