@@ -1,5 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 import SuperAdmin from "./pages/SuperAdmin";
 import Hello from "./pages/Hello";
@@ -12,19 +16,25 @@ import AgentWiseAnalysis from "./pages/AgentWiseAnalysis";
 function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
-        {/* MAIN PAGES */}
+      {/* AUTH */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
+      {/* PROTECTED APP */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<SuperAdmin />} />
         <Route path="/hello" element={<Hello />} />
 
-        {/* ADMIN ANALYSIS */}
         <Route path="/analysis" element={<AdminAnalysis />} />
         <Route path="/admin-report" element={<AdminReport />} />
-
-        {/* AGENT WISE ANALYSIS */}
         <Route path="/agent-analysis" element={<AgentWiseAnalysis />} />
 
-        {/* ADMIN → AGENTS FLOW */}
         <Route path="/admin/:adminId" element={<AdminAgents />} />
         <Route
           path="/admin/:adminId/agent/:agentId"
