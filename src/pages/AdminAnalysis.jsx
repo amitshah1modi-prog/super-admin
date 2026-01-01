@@ -20,7 +20,7 @@ function AdminAnalysis() {
     setAdminResult(null);
     setAgentTotals(null);
 
-    /* 🔹 1. ADMIN DETAILS */
+    /* 🔹 ADMIN DETAILS */
     const { data: adminData, error: adminError } = await supabase
       .from("admin_details")
       .select("login_time, logout_time")
@@ -29,13 +29,7 @@ function AdminAnalysis() {
       .order("login_time", { ascending: false })
       .limit(1);
 
-    if (adminError) {
-      setError("Error fetching admin details");
-      setLoading(false);
-      return;
-    }
-
-    if (!adminData || adminData.length === 0) {
+    if (adminError || !adminData?.length) {
       setError("No admin record found");
       setLoading(false);
       return;
@@ -43,7 +37,7 @@ function AdminAnalysis() {
 
     setAdminResult(adminData[0]);
 
-    /* 🔹 2. AGENT TOTALS */
+    /* 🔹 AGENT TOTALS */
     const { data: agentData, error: agentError } = await supabase
       .from("agent_details")
       .select(`
@@ -63,7 +57,6 @@ function AdminAnalysis() {
       return;
     }
 
-    // ✅ TOTAL CALCULATION
     const totals = {
       normal_order: 0,
       schedule_order: 0,
@@ -73,13 +66,13 @@ function AdminAnalysis() {
       customer_cancel: 0,
     };
 
-    agentData.forEach((row) => {
-      totals.normal_order += row.normal_order || 0;
-      totals.schedule_order += row.schedule_order || 0;
-      totals.assign_orderr += row.assign_orderr || 0;
-      totals.app_intent += row.app_intent || 0;
-      totals.employee_cancel += row.employee_cancel || 0;
-      totals.customer_cancel += row.customer_cancel || 0;
+    agentData.forEach((r) => {
+      totals.normal_order += r.normal_order || 0;
+      totals.schedule_order += r.schedule_order || 0;
+      totals.assign_orderr += r.assign_orderr || 0;
+      totals.app_intent += r.app_intent || 0;
+      totals.employee_cancel += r.employee_cancel || 0;
+      totals.customer_cancel += r.customer_cancel || 0;
     });
 
     setAgentTotals(totals);
@@ -87,58 +80,138 @@ function AdminAnalysis() {
   }
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Admin Analysis</h1>
+    <div style={styles.page}>
+      <h1 style={styles.title}>Admin Analysis</h1>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+      {/* 🔍 SEARCH BAR */}
+      <div style={styles.searchBar}>
         <input
-          placeholder="Admin ID"
+          placeholder="Enter Admin ID"
           value={adminId}
           onChange={(e) => setAdminId(e.target.value)}
+          style={styles.input}
         />
 
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          style={styles.input}
         />
 
-        <button onClick={handleSearch}>Search</button>
+        <button onClick={handleSearch} style={styles.searchBtn}>
+          {loading ? "Searching..." : "Search"}
+        </button>
       </div>
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={styles.error}>{error}</p>}
 
-      {/* 🔹 ADMIN DETAILS */}
-      {adminResult && (
-        <div style={boxStyle}>
-          <h3>Admin Session</h3>
-          <p><b>Login:</b> {adminResult.login_time}</p>
-          <p><b>Logout:</b> {adminResult.logout_time}</p>
-        </div>
-      )}
+      {/* 🔹 CARDS GRID */}
+      {(adminResult || agentTotals) && (
+        <div style={styles.grid}>
+          {adminResult && (
+            <>
+              <Card label="Login Time" value={adminResult.login_time} color="#DBEAFE" />
+              <Card label="Logout Time" value={adminResult.logout_time} color="#EDE9FE" />
+            </>
+          )}
 
-      {/* 🔹 AGENT TOTALS */}
-      {agentTotals && (
-        <div style={{ ...boxStyle, marginTop: "20px" }}>
-          <h3>Agent Totals</h3>
-          <p>Normal Orders: {agentTotals.normal_order}</p>
-          <p>Scheduled Orders: {agentTotals.schedule_order}</p>
-          <p>Assigned Orders: {agentTotals.assign_orderr}</p>
-          <p>App Intent: {agentTotals.app_intent}</p>
-          <p>Employee Cancel: {agentTotals.employee_cancel}</p>
-          <p>Customer Cancel: {agentTotals.customer_cancel}</p>
+          {agentTotals && (
+            <>
+              <Card label="Normal Orders" value={agentTotals.normal_order} color="#DCFCE7" />
+              <Card label="Scheduled Orders" value={agentTotals.schedule_order} color="#FAE8FF" />
+              <Card label="Assigned Orders" value={agentTotals.assign_orderr} color="#E0E7FF" />
+              <Card label="App Intent" value={agentTotals.app_intent} color="#FFE4E6" />
+              <Card label="Employee Cancel" value={agentTotals.employee_cancel} color="#F1F5F9" />
+              <Card label="Customer Cancel" value={agentTotals.customer_cancel} color="#FEE2E2" />
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-const boxStyle = {
-  background: "#f1f5f9",
-  padding: "20px",
-  borderRadius: "8px",
-  width: "350px",
+/* 🔹 CARD COMPONENT */
+function Card({ label, value, color }) {
+  return (
+    <div style={{ ...styles.card, background: color }}>
+      <span style={styles.cardLabel}>{label}</span>
+      <span style={styles.cardValue}>{value ?? "—"}</span>
+    </div>
+  );
+}
+
+/* 🔹 STYLES */
+const styles = {
+  page: {
+    padding: "30px",
+    background: "#f8fafc",
+    minHeight: "100vh",
+  },
+  title: {
+    fontSize: "28px",
+    fontWeight: "800",
+    marginBottom: "24px",
+    color: "#0f172a",
+  },
+  searchBar: {
+    display: "flex",
+    gap: "12px",
+    marginBottom: "30px",
+    background: "#ffffff",
+    padding: "16px",
+    borderRadius: "14px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  input: {
+    padding: "10px 14px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5f5",
+    fontSize: "14px",
+    outline: "none",
+    minWidth: "200px",
+  },
+  searchBtn: {
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: "10px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  error: {
+    color: "#dc2626",
+    marginBottom: "20px",
+    fontWeight: "600",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+    gap: "20px",
+  },
+  card: {
+    padding: "24px",
+    borderRadius: "18px",
+    boxShadow: "0 6px 12px rgba(0,0,0,0.05)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  cardLabel: {
+    fontSize: "13px",
+    fontWeight: "700",
+    color: "#475569",
+    textTransform: "uppercase",
+  },
+  cardValue: {
+    fontSize: "32px",
+    fontWeight: "800",
+    color: "#0f172a",
+  },
 };
 
 export default AdminAnalysis;
