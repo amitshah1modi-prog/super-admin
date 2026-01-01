@@ -20,7 +20,6 @@ function AdminReport() {
     setError("");
     setRows([]);
 
-    /* 1️⃣ ADMIN DETAILS */
     const { data: adminData, error: adminError } = await supabase
       .from("admin_details")
       .select("date, login_time, logout_time")
@@ -35,7 +34,6 @@ function AdminReport() {
       return;
     }
 
-    /* 2️⃣ AGENT DETAILS */
     const { data: agentData, error: agentError } = await supabase
       .from("agent_details")
       .select(`
@@ -57,7 +55,6 @@ function AdminReport() {
       return;
     }
 
-    /* 3️⃣ MERGE DATA DATE-WISE */
     const merged = adminData.map((adminRow) => {
       const sameDateAgents = agentData.filter(
         (a) => a.date === adminRow.date
@@ -83,7 +80,6 @@ function AdminReport() {
     setLoading(false);
   }
 
-  /* ⬇️ XLSX DOWNLOAD */
   function downloadExcel() {
     if (!rows.length) return;
 
@@ -98,89 +94,178 @@ function AdminReport() {
   }
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Admin Report</h1>
+    <div style={styles.page}>
+      <h1 style={styles.heading}>Admin Report</h1>
 
-      {/* FILTER BAR */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      {/* FILTER CARD */}
+      <div style={styles.filterCard}>
         <input
           placeholder="Admin ID"
           value={adminId}
           onChange={(e) => setAdminId(e.target.value)}
+          style={styles.input}
         />
 
         <input
           type="date"
           value={fromDate}
           onChange={(e) => setFromDate(e.target.value)}
+          style={styles.input}
         />
 
         <input
           type="date"
           value={toDate}
           onChange={(e) => setToDate(e.target.value)}
+          style={styles.input}
         />
 
-        <button onClick={handleSearch}>
+        <button
+          onClick={handleSearch}
+          style={{
+            ...styles.primaryBtn,
+            opacity: loading ? 0.7 : 1,
+          }}
+        >
           {loading ? "Searching..." : "Search"}
         </button>
 
         {rows.length > 0 && (
-          <button
-            onClick={downloadExcel}
-            style={{
-              background: "#16a34a",
-              color: "white",
-              padding: "6px 12px",
-              borderRadius: "4px",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Download Excel
+          <button onClick={downloadExcel} style={styles.secondaryBtn}>
+            ⬇ Download Excel
           </button>
         )}
       </div>
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <div style={styles.error}>{error}</div>}
 
       {/* TABLE */}
       {rows.length > 0 && (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Login</th>
-              <th>Logout</th>
-              <th>Normal</th>
-              <th>Scheduled</th>
-              <th>Assigned</th>
-              <th>App Intent</th>
-              <th>Emp Cancel</th>
-              <th>Cust Cancel</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                <td>{r.Date}</td>
-                <td>{r["Login Time"]}</td>
-                <td>{r["Logout Time"]}</td>
-                <td>{r["Normal Orders"]}</td>
-                <td>{r["Scheduled Orders"]}</td>
-                <td>{r["Assigned Orders"]}</td>
-                <td>{r["App Intent"]}</td>
-                <td>{r["Employee Cancel"]}</td>
-                <td>{r["Customer Cancel"]}</td>
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                {Object.keys(rows[0]).map((h) => (
+                  <th key={h} style={styles.th}>
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i} style={styles.tr}>
+                  {Object.values(r).map((v, idx) => (
+                    <td key={idx} style={styles.td}>
+                      {v}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <p style={styles.empty}>No data found</p>
       )}
     </div>
   );
 }
+
+const styles = {
+  page: {
+    padding: "30px",
+    background: "#f8fafc",
+    minHeight: "100vh",
+    fontFamily: "Inter, system-ui, sans-serif",
+  },
+  heading: {
+    fontSize: "28px",
+    fontWeight: "800",
+    marginBottom: "20px",
+    color: "#0f172a",
+  },
+  filterCard: {
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap",
+    padding: "20px",
+    background: "#ffffff",
+    borderRadius: "14px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+    marginBottom: "24px",
+    alignItems: "center",
+  },
+  input: {
+    padding: "10px 14px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5f5",
+    fontSize: "14px",
+    outline: "none",
+    background: "#f8fafc",
+  },
+  primaryBtn: {
+    background: "#2563eb",
+    color: "white",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+  secondaryBtn: {
+    background: "#16a34a",
+    color: "white",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+  error: {
+    color: "#b91c1c",
+    background: "#fee2e2",
+    padding: "12px",
+    borderRadius: "10px",
+    marginBottom: "20px",
+    fontWeight: "600",
+  },
+  tableWrapper: {
+    background: "#ffffff",
+    borderRadius: "14px",
+    overflowX: "auto",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+  th: {
+    background: "#0f172a",
+    color: "white",
+    padding: "12px",
+    fontSize: "13px",
+    textAlign: "left",
+    position: "sticky",
+    top: 0,
+  },
+  td: {
+    padding: "12px",
+    borderBottom: "1px solid #e5e7eb",
+    fontSize: "14px",
+    color: "#334155",
+  },
+  tr: {
+    transition: "background 0.2s",
+  },
+  empty: {
+    color: "#64748b",
+    fontSize: "15px",
+    marginTop: "30px",
+  },
+};
 
 export default AdminReport;
