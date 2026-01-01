@@ -32,37 +32,160 @@ function AdminAgents() {
   }
 
   return (
-    <div className="container">
-      <h2>Agents for Admin: {adminId}</h2>
+    <div style={styles.page}>
+      {/* BACKGROUND IMAGE */}
+      <div style={styles.bgImage} />
 
-      {loading ? (
-        <Loader />
-      ) : agents.length === 0 ? (
-        <p>No agents found</p>
-      ) : (
-        <ul>
-          {agents.map((agent) => (
-            <li
-              key={agent.agent_id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "10px",
-                borderBottom: "1px solid #ddd",
-                cursor: "pointer",
-              }}
-              onClick={() =>
-                navigate(`/admin/${adminId}/agent/${agent.agent_id}`)
-              }
-            >
-              <span>{agent.agent_id}</span>
-              <span>➡️</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* CONTENT */}
+      <div style={styles.content}>
+        {/* HEADER */}
+        <div style={styles.header}>
+          <button style={styles.backBtn} onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+
+          <div>
+            <h1 style={styles.title}>Admin Agents</h1>
+            <p style={styles.subtitle}>Admin ID: {adminId}</p>
+          </div>
+        </div>
+
+        {/* BODY */}
+        {loading ? (
+          <Loader />
+        ) : agents.length === 0 ? (
+          <div style={styles.emptyBox}>No agents found</div>
+        ) : (
+          <div style={styles.cardGrid}>
+            {agents.map((agent) => (
+              <div
+                key={agent.agent_id}
+                style={styles.agentCard}
+                onClick={() =>
+                  navigate(`/admin/${adminId}/agent/${agent.agent_id}`)
+                }
+              >
+                <div>
+                  <p style={styles.agentLabel}>Agent ID</p>
+                  <h3 style={styles.agentId}>{agent.agent_id}</h3>
+                </div>
+
+                <div style={styles.arrow}>→</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export default AdminAgents;
+
+/* ================= STYLES ================= */
+
+const styles = {
+  page: {
+    position: "relative",
+    minHeight: "100vh",
+    background: "#f8fafc",
+    overflow: "hidden",
+  },
+
+  bgImage: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage:
+      "url('https://images.unsplash.com/photo-1556761175-129418cb2dfe')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.05, // 🔥 VERY LOW OPACITY
+    zIndex: 0,
+  },
+
+  content: {
+    position: "relative",
+    zIndex: 1,
+    padding: "30px",
+  },
+
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+    marginBottom: "30px",
+  },
+
+  backBtn: {
+    background: "#e2e8f0",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  title: {
+    margin: 0,
+    fontSize: "28px",
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+
+  subtitle: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: "14px",
+    fontWeight: "500",
+  },
+
+  emptyBox: {
+    background: "#ffffff",
+    padding: "40px",
+    borderRadius: "16px",
+    textAlign: "center",
+    color: "#64748b",
+    fontWeight: "600",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+  },
+
+  cardGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+    gap: "20px",
+  },
+
+  agentCard: {
+    background: "#ffffff",
+    padding: "24px",
+    borderRadius: "18px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    cursor: "pointer",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+    transition: "all 0.25s ease",
+  },
+
+  agentLabel: {
+    margin: 0,
+    fontSize: "12px",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    color: "#64748b",
+    letterSpacing: "0.5px",
+  },
+
+  agentId: {
+    margin: 0,
+    fontSize: "20px",
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+
+  arrow: {
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#38bdf8",
+  },
+};
