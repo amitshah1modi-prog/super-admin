@@ -95,10 +95,10 @@ function AdminReport() {
 
   return (
     <div style={styles.page}>
-      {/* 🔥 BACKGROUND IMAGE */}
+      {/* 🔹 BACKGROUND IMAGE LAYER */}
       <div style={styles.bgImage} />
 
-      {/* CONTENT */}
+      {/* 🔹 CONTENT LAYER */}
       <div style={styles.content}>
         <h1 style={styles.heading}>Admin Report</h1>
 
@@ -125,13 +125,7 @@ function AdminReport() {
             style={styles.input}
           />
 
-          <button
-            onClick={handleSearch}
-            style={{
-              ...styles.primaryBtn,
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
+          <button onClick={handleSearch} style={styles.primaryBtn}>
             {loading ? "Searching..." : "Search"}
           </button>
 
@@ -157,10 +151,9 @@ function AdminReport() {
                   ))}
                 </tr>
               </thead>
-
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={i} style={styles.tr}>
+                  <tr key={i}>
                     {Object.values(r).map((v, idx) => (
                       <td key={idx} style={styles.td}>
                         {v}
@@ -172,14 +165,12 @@ function AdminReport() {
             </table>
           </div>
         )}
-
-        {!loading && rows.length === 0 && (
-          <p style={styles.empty}>No data found</p>
-        )}
       </div>
     </div>
   );
 }
+
+/* ================= STYLES ================= */
 
 const styles = {
   page: {
@@ -187,17 +178,16 @@ const styles = {
     minHeight: "100vh",
     background: "#f8fafc",
     overflow: "hidden",
-    fontFamily: "Inter, system-ui, sans-serif",
   },
 
   bgImage: {
     position: "absolute",
     inset: 0,
     backgroundImage:
-      "url('https://share.google/RfjGte9FTjvvJWEWI')",
+      "url('https://drive.google.com/file/d/1CL5ZJjwH5EZjubPZeq9_OxMs2eEmeZPB/view?usp=sharing')",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    opacity: 0.04, // ✅ VERY LOW OPACITY
+    opacity: 0.05, // 👈 VERY LOW OPACITY
     zIndex: 0,
   },
 
@@ -205,6 +195,7 @@ const styles = {
     position: "relative",
     zIndex: 1,
     padding: "30px",
+    fontFamily: "Inter, system-ui, sans-serif",
   },
 
   heading: {
@@ -231,7 +222,6 @@ const styles = {
     borderRadius: "10px",
     border: "1px solid #cbd5f5",
     fontSize: "14px",
-    outline: "none",
     background: "#f8fafc",
   },
 
@@ -282,8 +272,6 @@ const styles = {
     padding: "12px",
     fontSize: "13px",
     textAlign: "left",
-    position: "sticky",
-    top: 0,
   },
 
   td: {
@@ -291,16 +279,6 @@ const styles = {
     borderBottom: "1px solid #e5e7eb",
     fontSize: "14px",
     color: "#334155",
-  },
-
-  tr: {
-    transition: "background 0.2s",
-  },
-
-  empty: {
-    color: "#64748b",
-    fontSize: "15px",
-    marginTop: "30px",
   },
 };
 
