@@ -95,99 +95,125 @@ function AdminReport() {
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.heading}>Admin Report</h1>
+      {/* 🔥 BACKGROUND IMAGE */}
+      <div style={styles.bgImage} />
 
-      {/* FILTER CARD */}
-      <div style={styles.filterCard}>
-        <input
-          placeholder="Admin ID"
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          style={styles.input}
-        />
+      {/* CONTENT */}
+      <div style={styles.content}>
+        <h1 style={styles.heading}>Admin Report</h1>
 
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          style={styles.input}
-        />
+        {/* FILTER CARD */}
+        <div style={styles.filterCard}>
+          <input
+            placeholder="Admin ID"
+            value={adminId}
+            onChange={(e) => setAdminId(e.target.value)}
+            style={styles.input}
+          />
 
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          style={styles.input}
-        />
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            style={styles.input}
+          />
 
-        <button
-          onClick={handleSearch}
-          style={{
-            ...styles.primaryBtn,
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            style={styles.input}
+          />
 
-        {rows.length > 0 && (
-          <button onClick={downloadExcel} style={styles.secondaryBtn}>
-            ⬇ Download Excel
+          <button
+            onClick={handleSearch}
+            style={{
+              ...styles.primaryBtn,
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "Searching..." : "Search"}
           </button>
-        )}
-      </div>
 
-      {error && <div style={styles.error}>{error}</div>}
+          {rows.length > 0 && (
+            <button onClick={downloadExcel} style={styles.secondaryBtn}>
+              ⬇ Download Excel
+            </button>
+          )}
+        </div>
 
-      {/* TABLE */}
-      {rows.length > 0 && (
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                {Object.keys(rows[0]).map((h) => (
-                  <th key={h} style={styles.th}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+        {error && <div style={styles.error}>{error}</div>}
 
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={styles.tr}>
-                  {Object.values(r).map((v, idx) => (
-                    <td key={idx} style={styles.td}>
-                      {v}
-                    </td>
+        {/* TABLE */}
+        {rows.length > 0 && (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  {Object.keys(rows[0]).map((h) => (
+                    <th key={h} style={styles.th}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
 
-      {!loading && rows.length === 0 && (
-        <p style={styles.empty}>No data found</p>
-      )}
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i} style={styles.tr}>
+                    {Object.values(r).map((v, idx) => (
+                      <td key={idx} style={styles.td}>
+                        {v}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && rows.length === 0 && (
+          <p style={styles.empty}>No data found</p>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
   page: {
-    padding: "30px",
-    background: "#f8fafc",
+    position: "relative",
     minHeight: "100vh",
+    background: "#f8fafc",
+    overflow: "hidden",
     fontFamily: "Inter, system-ui, sans-serif",
   },
+
+  bgImage: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage:
+      "url('https://share.google/RfjGte9FTjvvJWEWI')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.04, // ✅ VERY LOW OPACITY
+    zIndex: 0,
+  },
+
+  content: {
+    position: "relative",
+    zIndex: 1,
+    padding: "30px",
+  },
+
   heading: {
     fontSize: "28px",
     fontWeight: "800",
     marginBottom: "20px",
     color: "#0f172a",
   },
+
   filterCard: {
     display: "flex",
     gap: "12px",
@@ -199,6 +225,7 @@ const styles = {
     marginBottom: "24px",
     alignItems: "center",
   },
+
   input: {
     padding: "10px 14px",
     borderRadius: "10px",
@@ -207,6 +234,7 @@ const styles = {
     outline: "none",
     background: "#f8fafc",
   },
+
   primaryBtn: {
     background: "#2563eb",
     color: "white",
@@ -216,6 +244,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
+
   secondaryBtn: {
     background: "#16a34a",
     color: "white",
@@ -225,6 +254,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
+
   error: {
     color: "#b91c1c",
     background: "#fee2e2",
@@ -233,16 +263,19 @@ const styles = {
     marginBottom: "20px",
     fontWeight: "600",
   },
+
   tableWrapper: {
     background: "#ffffff",
     borderRadius: "14px",
     overflowX: "auto",
     boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
   },
+
   table: {
     width: "100%",
     borderCollapse: "collapse",
   },
+
   th: {
     background: "#0f172a",
     color: "white",
@@ -252,15 +285,18 @@ const styles = {
     position: "sticky",
     top: 0,
   },
+
   td: {
     padding: "12px",
     borderBottom: "1px solid #e5e7eb",
     fontSize: "14px",
     color: "#334155",
   },
+
   tr: {
     transition: "background 0.2s",
   },
+
   empty: {
     color: "#64748b",
     fontSize: "15px",
