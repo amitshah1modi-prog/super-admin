@@ -83,11 +83,10 @@ function AgentWiseAnalysis() {
     setLoading(false);
   }
 
-  /* 4️⃣ DOWNLOAD EXCEL */
+  /* 4️⃣ Download Excel */
   function downloadExcel() {
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
-
     XLSX.utils.book_append_sheet(workbook, worksheet, "Agent Analysis");
 
     const excelBuffer = XLSX.write(workbook, {
@@ -107,11 +106,24 @@ function AgentWiseAnalysis() {
   }
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Agent Wise Analysis</h1>
+    <div style={{ padding: "30px", maxWidth: "1400px" }}>
+      <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "20px" }}>
+        Agent Wise Analysis
+      </h1>
 
-      {/* FILTERS */}
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+      {/* FILTER CARD */}
+      <div
+        style={{
+          background: "#ffffff",
+          padding: "20px",
+          borderRadius: "12px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <select value={adminId} onChange={(e) => setAdminId(e.target.value)}>
           <option value="">Select Admin</option>
           {admins.map((a) => (
@@ -137,11 +149,21 @@ function AgentWiseAnalysis() {
         <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
         <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
 
-        <button onClick={handleSearch}>
+        <button
+          onClick={handleSearch}
+          style={{
+            background: "#2563eb",
+            color: "white",
+            border: "none",
+            padding: "10px 18px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "600",
+          }}
+        >
           {loading ? "Searching..." : "Search"}
         </button>
 
-        {/* DOWNLOAD BUTTON */}
         {rows.length > 0 && (
           <button
             onClick={downloadExcel}
@@ -149,8 +171,10 @@ function AgentWiseAnalysis() {
               background: "#16a34a",
               color: "white",
               border: "none",
-              padding: "8px 14px",
+              padding: "10px 18px",
+              borderRadius: "8px",
               cursor: "pointer",
+              fontWeight: "600",
             }}
           >
             Download Excel
@@ -159,51 +183,88 @@ function AgentWiseAnalysis() {
       </div>
 
       {/* ERROR */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
 
       {/* TABLE */}
       {rows.length > 0 && (
-        <table
-          border="1"
-          cellPadding="8"
-          style={{ marginTop: "20px", borderCollapse: "collapse" }}
+        <div
+          style={{
+            marginTop: "30px",
+            background: "#ffffff",
+            borderRadius: "12px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+            overflowX: "auto",
+          }}
         >
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Login</th>
-              <th>Logout</th>
-              <th>Call</th>
-              <th>Break</th>
-              <th>Normal</th>
-              <th>Schedule</th>
-              <th>Assign</th>
-              <th>App Intent</th>
-              <th>Emp Cancel</th>
-              <th>Cust Cancel</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                <td>{r.date}</td>
-                <td>{r.login_time}</td>
-                <td>{r.logout_time}</td>
-                <td>{r.call_time}</td>
-                <td>{r.break_time}</td>
-                <td>{r.normal_order}</td>
-                <td>{r.schedule_order}</td>
-                <td>{r.assign_orderr}</td>
-                <td>{r.app_intent}</td>
-                <td>{r.employee_cancel}</td>
-                <td>{r.customer_cancel}</td>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "14px",
+            }}
+          >
+            <thead style={{ background: "#f1f5f9" }}>
+              <tr>
+                {[
+                  "Date",
+                  "Login",
+                  "Logout",
+                  "Call",
+                  "Break",
+                  "Normal",
+                  "Schedule",
+                  "Assign",
+                  "App Intent",
+                  "Emp Cancel",
+                  "Cust Cancel",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      fontWeight: "700",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {rows.map((r, i) => (
+                <tr
+                  key={i}
+                  style={{
+                    borderBottom: "1px solid #e5e7eb",
+                    background: i % 2 === 0 ? "#ffffff" : "#f9fafb",
+                  }}
+                >
+                  <td style={{ padding: "10px" }}>{r.date}</td>
+                  <td style={{ padding: "10px" }}>{r.login_time}</td>
+                  <td style={{ padding: "10px" }}>{r.logout_time}</td>
+                  <td style={{ padding: "10px" }}>{r.call_time}</td>
+                  <td style={{ padding: "10px" }}>{r.break_time}</td>
+                  <td style={{ padding: "10px" }}>{r.normal_order}</td>
+                  <td style={{ padding: "10px" }}>{r.schedule_order}</td>
+                  <td style={{ padding: "10px" }}>{r.assign_orderr}</td>
+                  <td style={{ padding: "10px" }}>{r.app_intent}</td>
+                  <td style={{ padding: "10px" }}>{r.employee_cancel}</td>
+                  <td style={{ padding: "10px" }}>{r.customer_cancel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {!loading && rows.length === 0 && <p>No data found</p>}
+      {!loading && rows.length === 0 && (
+        <p style={{ marginTop: "20px", color: "#64748b" }}>
+          No data found
+        </p>
+      )}
     </div>
   );
 }
