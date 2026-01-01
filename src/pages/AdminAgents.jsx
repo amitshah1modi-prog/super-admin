@@ -8,6 +8,7 @@ function AdminAgents() {
   const navigate = useNavigate();
 
   const [agents, setAgents] = useState([]);
+  const [filteredAgents, setFilteredAgents] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -23,14 +24,26 @@ function AdminAgents() {
       .select("agent_id")
       .eq("admin_id", adminId);
 
-    if (!error) setAgents(data || []);
+    if (!error) {
+      setAgents(data || []);
+      setFilteredAgents(data || []);
+    }
+
     setLoading(false);
   }
 
-  /* 🔍 FILTER AGENTS */
-  const filteredAgents = agents.filter((a) =>
-    a.agent_id.toLowerCase().includes(search.toLowerCase())
-  );
+  /* 🔍 SEARCH FILTER */
+  useEffect(() => {
+    if (!search.trim()) {
+      setFilteredAgents(agents);
+    } else {
+      setFilteredAgents(
+        agents.filter((a) =>
+          a.agent_id.toLowerCase().includes(search.toLowerCase())
+        )
+      );
+    }
+  }, [search, agents]);
 
   return (
     <div style={styles.page}>
@@ -41,18 +54,18 @@ function AdminAgents() {
       <div style={styles.content}>
         {/* HEADER */}
         <div style={styles.header}>
-          <button style={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <button style={styles.backBtn} onClick={() => navigate(-1)}>
+              ← Back
+            </button>
 
-          <div>
-            <h1 style={styles.title}>Admin Agents</h1>
-            <p style={styles.subtitle}>Admin ID: {adminId}</p>
+            <div>
+              <h1 style={styles.title}>Admin Agents</h1>
+              <p style={styles.subtitle}>Admin ID: {adminId}</p>
+            </div>
           </div>
-        </div>
 
-        {/* 🔍 SEARCH BAR */}
-        <div style={styles.searchBox}>
+          {/* 🔍 SEARCH BAR (TOP RIGHT) */}
           <input
             type="text"
             placeholder="Search Agent ID..."
@@ -60,14 +73,13 @@ function AdminAgents() {
             onChange={(e) => setSearch(e.target.value)}
             style={styles.searchInput}
           />
-          <span style={styles.searchIcon}>🔍</span>
         </div>
 
         {/* BODY */}
         {loading ? (
           <Loader />
         ) : filteredAgents.length === 0 ? (
-          <div style={styles.emptyBox}>No matching agents found</div>
+          <div style={styles.emptyBox}>No agents found</div>
         ) : (
           <div style={styles.cardGrid}>
             {filteredAgents.map((agent) => (
@@ -124,9 +136,11 @@ const styles = {
 
   header: {
     display: "flex",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: "30px",
     gap: "20px",
-    marginBottom: "24px",
+    flexWrap: "wrap",
   },
 
   backBtn: {
@@ -152,31 +166,14 @@ const styles = {
     fontWeight: "500",
   },
 
-  /* 🔍 SEARCH */
-  searchBox: {
-    position: "relative",
-    maxWidth: "360px",
-    marginBottom: "30px",
-  },
-
   searchInput: {
-    width: "100%",
-    padding: "12px 44px 12px 16px",
+    padding: "12px 16px",
     borderRadius: "12px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #e5e7eb",
     fontSize: "14px",
+    minWidth: "240px",
     outline: "none",
-    background: "#ffffff",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-  },
-
-  searchIcon: {
-    position: "absolute",
-    right: "14px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "18px",
-    color: "#64748b",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
   },
 
   emptyBox: {
