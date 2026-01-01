@@ -5,11 +5,22 @@ import Loader from "../components/Loader";
 
 function SuperAdmin() {
   const [admins, setAdmins] = useState([]);
+  const [filteredAdmins, setFilteredAdmins] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAdmins();
   }, []);
+
+  useEffect(() => {
+    const value = search.toLowerCase();
+    setFilteredAdmins(
+      admins.filter((a) =>
+        a.admin_id.toString().toLowerCase().includes(value)
+      )
+    );
+  }, [search, admins]);
 
   async function fetchAdmins() {
     setLoading(true);
@@ -18,10 +29,9 @@ function SuperAdmin() {
       .from("admins")
       .select("admin_id, state");
 
-    if (error) {
-      console.error("Error fetching admins:", error);
-    } else {
+    if (!error) {
       setAdmins(data || []);
+      setFilteredAdmins(data || []);
     }
 
     setLoading(false);
@@ -35,7 +45,7 @@ function SuperAdmin() {
         minHeight: "100vh",
       }}
     >
-      {/* PAGE HEADER */}
+      {/* HEADER */}
       <div
         style={{
           marginBottom: "28px",
@@ -90,13 +100,14 @@ function SuperAdmin() {
           boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
         }}
       >
-        {/* TABLE HEADER */}
+        {/* TOP BAR */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: "20px",
+            gap: "16px",
           }}
         >
           <h2
@@ -110,18 +121,21 @@ function SuperAdmin() {
             Admin List
           </h2>
 
-          <span
+          {/* 🔍 SEARCH */}
+          <input
+            placeholder="Search Admin ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             style={{
-              fontSize: "13px",
-              fontWeight: "600",
-              color: "#475569",
-              background: "#f1f5f9",
-              padding: "6px 12px",
-              borderRadius: "8px",
+              width: "260px",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              border: "1px solid #e5e7eb",
+              outline: "none",
+              fontSize: "14px",
+              background: "#f8fafc",
             }}
-          >
-            Live Status
-          </span>
+          />
         </div>
 
         {/* CONTENT */}
@@ -135,7 +149,7 @@ function SuperAdmin() {
           >
             <Loader />
           </div>
-        ) : admins.length === 0 ? (
+        ) : filteredAdmins.length === 0 ? (
           <div
             style={{
               padding: "60px 0",
@@ -144,10 +158,10 @@ function SuperAdmin() {
               fontSize: "15px",
             }}
           >
-            No admins found in the system
+            No admins match your search
           </div>
         ) : (
-          <AdminList admins={admins} />
+          <AdminList admins={filteredAdmins} />
         )}
       </div>
     </div>
