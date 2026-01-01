@@ -8,6 +8,7 @@ function AdminAgents() {
   const navigate = useNavigate();
 
   const [agents, setAgents] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,14 +23,14 @@ function AdminAgents() {
       .select("agent_id")
       .eq("admin_id", adminId);
 
-    if (error) {
-      console.error(error);
-    } else {
-      setAgents(data || []);
-    }
-
+    if (!error) setAgents(data || []);
     setLoading(false);
   }
+
+  /* 🔍 FILTER AGENTS */
+  const filteredAgents = agents.filter((a) =>
+    a.agent_id.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div style={styles.page}>
@@ -50,14 +51,26 @@ function AdminAgents() {
           </div>
         </div>
 
+        {/* 🔍 SEARCH BAR */}
+        <div style={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search Agent ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.searchInput}
+          />
+          <span style={styles.searchIcon}>🔍</span>
+        </div>
+
         {/* BODY */}
         {loading ? (
           <Loader />
-        ) : agents.length === 0 ? (
-          <div style={styles.emptyBox}>No agents found</div>
+        ) : filteredAgents.length === 0 ? (
+          <div style={styles.emptyBox}>No matching agents found</div>
         ) : (
           <div style={styles.cardGrid}>
-            {agents.map((agent) => (
+            {filteredAgents.map((agent) => (
               <div
                 key={agent.agent_id}
                 style={styles.agentCard}
@@ -99,7 +112,7 @@ const styles = {
       "url('https://images.unsplash.com/photo-1556761175-129418cb2dfe')",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    opacity: 0.05, // 🔥 VERY LOW OPACITY
+    opacity: 0.04,
     zIndex: 0,
   },
 
@@ -113,7 +126,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "20px",
-    marginBottom: "30px",
+    marginBottom: "24px",
   },
 
   backBtn: {
@@ -137,6 +150,33 @@ const styles = {
     color: "#64748b",
     fontSize: "14px",
     fontWeight: "500",
+  },
+
+  /* 🔍 SEARCH */
+  searchBox: {
+    position: "relative",
+    maxWidth: "360px",
+    marginBottom: "30px",
+  },
+
+  searchInput: {
+    width: "100%",
+    padding: "12px 44px 12px 16px",
+    borderRadius: "12px",
+    border: "1px solid #e2e8f0",
+    fontSize: "14px",
+    outline: "none",
+    background: "#ffffff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+  },
+
+  searchIcon: {
+    position: "absolute",
+    right: "14px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    fontSize: "18px",
+    color: "#64748b",
   },
 
   emptyBox: {
