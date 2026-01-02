@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import Loader from "../components/Loader";
 
+import bgImage from "../assets/report-bg.png"; // ✅ LOCAL IMAGE
+
 function AdminAgents() {
   const { adminId } = useParams();
   const navigate = useNavigate();
@@ -47,10 +49,15 @@ function AdminAgents() {
 
   return (
     <div style={styles.page}>
-      {/* BACKGROUND IMAGE */}
-      <div style={styles.bgImage} />
+      {/* 🔹 BACKGROUND IMAGE */}
+      <div
+        style={{
+          ...styles.bgImage,
+          backgroundImage: `url(${bgImage})`,
+        }}
+      />
 
-      {/* CONTENT */}
+      {/* 🔹 CONTENT */}
       <div style={styles.content}>
         {/* HEADER */}
         <div style={styles.header}>
@@ -120,12 +127,12 @@ const styles = {
   bgImage: {
     position: "absolute",
     inset: 0,
-    backgroundImage:
-      "url('https://images.unsplash.com/photo-1556761175-129418cb2dfe')",
-    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    opacity: 0.04,
+    backgroundSize: "60%",     // ✅ centered & not huge
+    opacity: 0.08,             // ✅ visible but subtle
     zIndex: 0,
+    pointerEvents: "none",
   },
 
   content: {
