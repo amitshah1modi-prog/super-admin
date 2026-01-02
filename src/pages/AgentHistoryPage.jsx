@@ -1,229 +1,218 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import * as XLSX from "xlsx";
+import reportBg from "../assets/report-bg.png";
 
-function AgentHistoryPage() {
-  const { adminId, agentId } = useParams();
-  const navigate = useNavigate();
-
+function AdminReport() {
+  const [adminId, setAdminId] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (adminId && agentId && selectedDate) {
-      fetchHistoryByDate();
+  async function handleSearch() {
+    if (!adminId || !fromDate || !toDate) {
+      alert("Admin ID and date range required");
+      return;
     }
-  }, [adminId, agentId, selectedDate]);
 
-  async function fetchHistoryByDate() {
     setLoading(true);
+    setError("");
+    setRows([]);
 
-    const { data, error } = await supabase
-      .from("agent_details")
-      .select("*")
+    const { data: adminData, error: adminError } = await supabase
+      .from("admin_details")
+      .select("date, login_time, logout_time")
       .eq("admin_id", adminId)
-      .eq("agent_id", agentId)
-      .eq("date", selectedDate)
-      .order("login_time", { ascending: false })
-      .limit(1);
+      .gte("date", fromDate)
+      .lte("date", toDate)
+      .order("date", { ascending: true });
 
-    if (error) {
-      console.error(error);
-      setRows([]);
-    } else {
-      setRows(data || []);
+    if (adminError) {
+      setError("Error fetching admin details");
+      setLoading(false);
+      return;
     }
 
+    const { data: agentData } = await supabase
+      .from("agent_details")
+      .select(`
+        date,
+        normal_order,
+        schedule_order,
+        assign_orderr,
+        app_intent,
+        employee_cancel,
+        customer_cancel
+      `)
+      .eq("admin_id", adminId)
+      .gte("date", fromDate)
+      .lte("date", toDate);
+
+    const merged = adminData.map((adminRow) => {
+      const sameDateAgents = agentData.filter(
+        (a) => a.date === adminRow.date
+      );
+
+      const sum = (key) =>
+        sameDateAgents.reduce((t, r) => t + (r[key] || 0), 0);
+
+      return {
+        Date: adminRow.date,
+        "Login Time": adminRow.login_time,
+        "Logout Time": adminRow.logout_time,
+        "Normal Orders": sum("normal_order"),
+        "Scheduled Orders": sum("schedule_order"),
+        "Assigned Orders": sum("assign_orderr"),
+        "App Intent": sum("app_intent"),
+        "Employee Cancel": sum("employee_cancel"),
+        "Customer Cancel": sum("customer_cancel"),
+      };
+    });
+
+    setRows(merged);
     setLoading(false);
   }
 
-  const cardStyle = (bg) => ({
-    background: bg,
-    padding: "22px",
-    borderRadius: "16px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  });
+  function downloadExcel() {
+    if (!rows.length) return;
 
-  const labelStyle = {
-    fontSize: "13px",
-    fontWeight: "700",
-    color: "#475569",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  };
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Admin Report");
 
-  const valueStyle = {
-    fontSize: "28px",
-    fontWeight: "800",
-    color: "#0f172a",
-  };
+    XLSX.writeFile(
+      wb,
+      `admin_report_${adminId}_${fromDate}_to_${toDate}.xlsx`
+    );
+  }
 
   return (
     <div style={styles.page}>
-      {/* BACKGROUND IMAGE */}
+      {/* 🔥 BACKGROUND IMAGE */}
       <div style={styles.bgImage} />
 
       {/* CONTENT */}
       <div style={styles.content}>
-        {/* TOP BAR */}
-        <div style={styles.topBar}>
-          <button style={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-          </button>
+        <h1 style={styles.heading}>Admin Report</h1>
+
+        <div style={styles.filterCard}>
+          <input
+            placeholder="Admin ID"
+            value={adminId}
+            onChange={(e) => setAdminId(e.target.value)}
+            style={styles.input}
+          />
 
           <input
             type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={styles.dateInput}
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            style={styles.input}
           />
+
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            style={styles.input}
+          />
+
+          <button onClick={handleSearch} style={styles.primaryBtn}>
+            {loading ? "Searching..." : "Search"}
+          </button>
+
+          {rows.length > 0 && (
+            <button onClick={downloadExcel} style={styles.secondaryBtn}>
+              ⬇ Download Excel
+            </button>
+          )}
         </div>
 
-        {/* HEADER */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2 style={styles.title}>
-            Agent <span style={{ color: "#2563eb" }}>{agentId}</span>
-          </h2>
-          <p style={styles.subtitle}>Admin ID: {adminId}</p>
-        </div>
-
-        {/* STATES */}
-        {loading && <p>Loading agent data...</p>}
-        {!loading && selectedDate && rows.length === 0 && (
-          <p>No records found for selected date</p>
-        )}
-
-        {/* DATA CARDS */}
-        {!loading && rows.length > 0 && (
-          <div style={styles.grid}>
-            <div style={cardStyle("#e0f2fe")}>
-              <div style={labelStyle}>Login Time</div>
-              <div style={valueStyle}>{rows[0].login_time || "—"}</div>
-            </div>
-
-            <div style={cardStyle("#ede9fe")}>
-              <div style={labelStyle}>Logout Time</div>
-              <div style={valueStyle}>{rows[0].logout_time || "—"}</div>
-            </div>
-
-            <div style={cardStyle("#dcfce7")}>
-              <div style={labelStyle}>Call Time</div>
-              <div style={valueStyle}>{rows[0].call_time || 0}</div>
-            </div>
-
-            <div style={cardStyle("#fff7ed")}>
-              <div style={labelStyle}>Break Time</div>
-              <div style={valueStyle}>{rows[0].break_time || 0}</div>
-            </div>
-
-            <div style={cardStyle("#f0fdf4")}>
-              <div style={labelStyle}>Normal Orders</div>
-              <div style={valueStyle}>{rows[0].normal_order || 0}</div>
-            </div>
-
-            <div style={cardStyle("#faf5ff")}>
-              <div style={labelStyle}>Scheduled Orders</div>
-              <div style={valueStyle}>{rows[0].schedule_order || 0}</div>
-            </div>
-
-            <div style={cardStyle("#eef2ff")}>
-              <div style={labelStyle}>Assigned Orders</div>
-              <div style={valueStyle}>{rows[0].assign_orderr || 0}</div>
-            </div>
-
-            <div style={cardStyle("#ffe4e6")}>
-              <div style={labelStyle}>App Intent</div>
-              <div style={valueStyle}>{rows[0].app_intent || 0}</div>
-            </div>
-
-            <div style={cardStyle("#f1f5f9")}>
-              <div style={labelStyle}>Employee Cancel</div>
-              <div style={valueStyle}>{rows[0].employee_cancel || 0}</div>
-            </div>
-
-            <div style={cardStyle("#fee2e2")}>
-              <div style={labelStyle}>Customer Cancel</div>
-              <div style={valueStyle}>{rows[0].customer_cancel || 0}</div>
-            </div>
-          </div>
-        )}
+        {error && <div style={styles.error}>{error}</div>}
       </div>
     </div>
   );
 }
 
-export default AgentHistoryPage;
-
-/* ================= STYLES ================= */
-
 const styles = {
   page: {
     position: "relative",
     minHeight: "100vh",
-    background: "#f8fafc",
     overflow: "hidden",
+    background: "#f8fafc",
   },
 
   bgImage: {
     position: "absolute",
     inset: 0,
-    backgroundImage: "url('/assets/report-bg.png')",
+    backgroundImage: `url(${reportBg})`,
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    backgroundSize: "600px",
-    opacity: 0.08,
+    backgroundSize: "600px", // 👈 controlled size
+    opacity: 0.12, // 👈 visible but subtle
     zIndex: 0,
   },
 
   content: {
     position: "relative",
     zIndex: 1,
-    padding: "32px",
+    padding: "30px",
   },
 
-  topBar: {
+  heading: {
+    fontSize: "28px",
+    fontWeight: "800",
+    marginBottom: "20px",
+    color: "#0f172a",
+  },
+
+  filterCard: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "28px",
+    gap: "12px",
+    flexWrap: "wrap",
+    padding: "20px",
+    background: "#ffffff",
+    borderRadius: "14px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
   },
 
-  backBtn: {
-    background: "#e2e8f0",
-    border: "none",
-    padding: "10px 16px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-
-  dateInput: {
+  input: {
     padding: "10px 14px",
     borderRadius: "10px",
-    border: "1px solid #cbd5e1",
+    border: "1px solid #cbd5f5",
     fontSize: "14px",
   },
 
-  title: {
-    margin: 0,
-    fontSize: "26px",
-    fontWeight: "800",
-    color: "#020617",
+  primaryBtn: {
+    background: "#2563eb",
+    color: "white",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    border: "none",
+    fontWeight: "600",
+    cursor: "pointer",
   },
 
-  subtitle: {
-    margin: 0,
-    color: "#64748b",
-    fontWeight: "500",
+  secondaryBtn: {
+    background: "#16a34a",
+    color: "white",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    border: "none",
+    fontWeight: "600",
+    cursor: "pointer",
   },
 
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-    gap: "20px",
+  error: {
+    marginTop: "16px",
+    color: "#b91c1c",
+    background: "#fee2e2",
+    padding: "12px",
+    borderRadius: "10px",
+    fontWeight: "600",
   },
 };
+
+export default AdminReport;
