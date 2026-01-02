@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import * as XLSX from "xlsx";
-import reportBg from "../assets/report-bg.png"; // ✅ IMPORTANT
+
+// 🔥 IMPORT IMAGE CORRECTLY (Vite way)
+import reportBg from "../assets/report-bg.png";
 
 function AdminReport() {
   const [adminId, setAdminId] = useState("");
@@ -96,7 +98,7 @@ function AdminReport() {
 
   return (
     <div style={styles.page}>
-      {/* 🔹 BACKGROUND IMAGE */}
+      {/* 🔹 BACKGROUND IMAGE LAYER */}
       <div
         style={{
           ...styles.bgImage,
@@ -108,6 +110,7 @@ function AdminReport() {
       <div style={styles.content}>
         <h1 style={styles.heading}>Admin Report</h1>
 
+        {/* FILTER CARD */}
         <div style={styles.filterCard}>
           <input
             placeholder="Admin ID"
@@ -132,7 +135,10 @@ function AdminReport() {
 
           <button
             onClick={handleSearch}
-            style={{ ...styles.primaryBtn, opacity: loading ? 0.7 : 1 }}
+            style={{
+              ...styles.primaryBtn,
+              opacity: loading ? 0.7 : 1,
+            }}
           >
             {loading ? "Searching..." : "Search"}
           </button>
@@ -146,13 +152,16 @@ function AdminReport() {
 
         {error && <div style={styles.error}>{error}</div>}
 
+        {/* TABLE */}
         {rows.length > 0 && (
           <div style={styles.tableWrapper}>
             <table style={styles.table}>
               <thead>
                 <tr>
                   {Object.keys(rows[0]).map((h) => (
-                    <th key={h} style={styles.th}>{h}</th>
+                    <th key={h} style={styles.th}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -160,7 +169,9 @@ function AdminReport() {
                 {rows.map((r, i) => (
                   <tr key={i}>
                     {Object.values(r).map((v, idx) => (
-                      <td key={idx} style={styles.td}>{v}</td>
+                      <td key={idx} style={styles.td}>
+                        {v}
+                      </td>
                     ))}
                   </tr>
                 ))}
@@ -190,9 +201,10 @@ const styles = {
   bgImage: {
     position: "absolute",
     inset: 0,
-    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    opacity: 0.04, // 🔥 VERY SOFT
+    backgroundSize: "520px", // 🔥 REDUCED SIZE
+    opacity: 0.12, // 🔥 SLIGHTLY MORE VISIBLE
     zIndex: 0,
   },
 
@@ -226,6 +238,7 @@ const styles = {
     padding: "10px 14px",
     borderRadius: "10px",
     border: "1px solid #cbd5f5",
+    fontSize: "14px",
     background: "#f8fafc",
   },
 
@@ -250,10 +263,11 @@ const styles = {
   },
 
   error: {
+    color: "#b91c1c",
     background: "#fee2e2",
-    color: "#991b1b",
     padding: "12px",
     borderRadius: "10px",
+    marginBottom: "20px",
     fontWeight: "600",
   },
 
@@ -280,12 +294,14 @@ const styles = {
   td: {
     padding: "12px",
     borderBottom: "1px solid #e5e7eb",
+    fontSize: "14px",
     color: "#334155",
   },
 
   empty: {
-    marginTop: "30px",
     color: "#64748b",
+    fontSize: "15px",
+    marginTop: "30px",
   },
 };
 
