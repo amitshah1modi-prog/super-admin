@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import reportBg from "../assets/report-bg.png"; // ✅ IMPORT IMAGE
 
 function AgentWiseAnalysis() {
   const [admins, setAdmins] = useState([]);
@@ -107,170 +108,168 @@ function AgentWiseAnalysis() {
   }
 
   return (
-    <div style={{ padding: "30px", maxWidth: "1200px" }}>
-      <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "20px" }}>
-        Agent Wise Analysis
-      </h1>
+    <div style={styles.page}>
+      {/* 🔥 BACKGROUND IMAGE */}
+      <div style={styles.bgImage} />
 
-      {/* FILTER CARD */}
-      <div
-        style={{
-          background: "#ffffff",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-          marginBottom: "25px",
-        }}
-      >
-        <select
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          style={inputStyle}
-        >
-          <option value="">Select Admin</option>
-          {admins.map((a) => (
-            <option key={a.admin_id} value={a.admin_id}>
-              {a.admin_id}
-            </option>
-          ))}
-        </select>
+      {/* 🔹 CONTENT */}
+      <div style={styles.content}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "20px" }}>
+          Agent Wise Analysis
+        </h1>
 
-        <select
-          value={agentId}
-          onChange={(e) => setAgentId(e.target.value)}
-          disabled={!adminId}
+        {/* FILTER CARD */}
+        <div
           style={{
-            ...inputStyle,
-            backgroundColor: adminId ? "#fff" : "#f1f5f9",
+            background: "#ffffff",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "16px",
+            marginBottom: "25px",
           }}
         >
-          <option value="">Select Agent</option>
-          {agents.map((a) => (
-            <option key={a.agent_id} value={a.agent_id}>
-              {a.agent_id}
-            </option>
-          ))}
-        </select>
+          <select value={adminId} onChange={(e) => setAdminId(e.target.value)} style={inputStyle}>
+            <option value="">Select Admin</option>
+            {admins.map((a) => (
+              <option key={a.admin_id} value={a.admin_id}>
+                {a.admin_id}
+              </option>
+            ))}
+          </select>
 
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          style={inputStyle}
-        />
-
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          style={inputStyle}
-        />
-
-        <button
-          onClick={handleSearch}
-          style={{
-            background: "#2563eb",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            fontWeight: "600",
-            cursor: "pointer",
-            height: "44px",
-          }}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
-
-        {rows.length > 0 && (
-          <button
-            onClick={downloadExcel}
+          <select
+            value={agentId}
+            onChange={(e) => setAgentId(e.target.value)}
+            disabled={!adminId}
             style={{
-              background: "#16a34a",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "600",
-              cursor: "pointer",
-              height: "44px",
+              ...inputStyle,
+              backgroundColor: adminId ? "#fff" : "#f1f5f9",
             }}
           >
-            Download Excel
+            <option value="">Select Agent</option>
+            {agents.map((a) => (
+              <option key={a.agent_id} value={a.agent_id}>
+                {a.agent_id}
+              </option>
+            ))}
+          </select>
+
+          <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} style={inputStyle} />
+          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} style={inputStyle} />
+
+          <button onClick={handleSearch} style={styles.primaryBtn}>
+            {loading ? "Searching..." : "Search"}
           </button>
-        )}
-      </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {/* TABLE */}
-      {rows.length > 0 && (
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              background: "white",
-              borderRadius: "12px",
-              overflow: "hidden",
-              boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
-            }}
-          >
-            <thead style={{ background: "#0f172a", color: "white" }}>
-              <tr>
-                {[
-                  "Date",
-                  "Login",
-                  "Logout",
-                  "Call",
-                  "Break",
-                  "Normal",
-                  "Schedule",
-                  "Assign",
-                  "App Intent",
-                  "Emp Cancel",
-                  "Cust Cancel",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "12px",
-                      fontSize: "13px",
-                      textAlign: "left",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                  <td style={cell}>{r.date}</td>
-                  <td style={cell}>{r.login_time}</td>
-                  <td style={cell}>{r.logout_time}</td>
-                  <td style={cell}>{r.call_time}</td>
-                  <td style={cell}>{r.break_time}</td>
-                  <td style={cell}>{r.normal_order}</td>
-                  <td style={cell}>{r.schedule_order}</td>
-                  <td style={cell}>{r.assign_orderr}</td>
-                  <td style={cell}>{r.app_intent}</td>
-                  <td style={cell}>{r.employee_cancel}</td>
-                  <td style={cell}>{r.customer_cancel}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {rows.length > 0 && (
+            <button onClick={downloadExcel} style={styles.secondaryBtn}>
+              Download Excel
+            </button>
+          )}
         </div>
-      )}
 
-      {!loading && rows.length === 0 && <p>No data found</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        {/* TABLE */}
+        {rows.length > 0 && (
+          <div style={{ overflowX: "auto" }}>
+            <table style={styles.table}>
+              <thead style={{ background: "#0f172a", color: "white" }}>
+                <tr>
+                  {[
+                    "Date","Login","Logout","Call","Break",
+                    "Normal","Schedule","Assign","App Intent","Emp Cancel","Cust Cancel"
+                  ].map((h) => (
+                    <th key={h} style={styles.th}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i}>
+                    <td style={cell}>{r.date}</td>
+                    <td style={cell}>{r.login_time}</td>
+                    <td style={cell}>{r.logout_time}</td>
+                    <td style={cell}>{r.call_time}</td>
+                    <td style={cell}>{r.break_time}</td>
+                    <td style={cell}>{r.normal_order}</td>
+                    <td style={cell}>{r.schedule_order}</td>
+                    <td style={cell}>{r.assign_orderr}</td>
+                    <td style={cell}>{r.app_intent}</td>
+                    <td style={cell}>{r.employee_cancel}</td>
+                    <td style={cell}>{r.customer_cancel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && rows.length === 0 && <p>No data found</p>}
+      </div>
     </div>
   );
 }
+
+/* 🔹 STYLES */
+const styles = {
+  page: {
+    position: "relative",
+    minHeight: "100vh",
+    background: "#f8fafc",
+    overflow: "hidden",
+  },
+  bgImage: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: `url(${reportBg})`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center",
+    backgroundSize: "55%",   // ✅ CENTERED & FIT
+    opacity: 0.12,           // ✅ VISIBLE BUT SOFT
+    zIndex: 0,
+  },
+  content: {
+    position: "relative",
+    zIndex: 1,
+    padding: "30px",
+  },
+  primaryBtn: {
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "600",
+    cursor: "pointer",
+    height: "44px",
+  },
+  secondaryBtn: {
+    background: "#16a34a",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "600",
+    cursor: "pointer",
+    height: "44px",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    background: "white",
+    borderRadius: "12px",
+    overflow: "hidden",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+  },
+  th: {
+    padding: "12px",
+    fontSize: "13px",
+    textAlign: "left",
+  },
+};
 
 const inputStyle = {
   height: "44px",
