@@ -1,159 +1,104 @@
 import bgImage from "../assets/report-bg.png";
-import { useEffect, useState } from "react";
 
 function Hello() {
-  const [glitch, setGlitch] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGlitch(true);
-      setTimeout(() => setGlitch(false), 150);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div style={styles.page}>
-      {/* BACKGROUND IMAGE */}
-      <div style={styles.bgImage} />
+    <div className="crazy-page">
+      <div className="bg-logo" />
 
-      {/* FLOATING ORBS */}
-      <div style={styles.orb1} />
-      <div style={styles.orb2} />
-      <div style={styles.orb3} />
+      <h1 className="crazy-text">
+        HELLO 👋
+      </h1>
 
-      {/* CONTENT */}
-      <div style={styles.centerWrap}>
-        <div
-          style={{
-            ...styles.helloText,
-            ...(glitch ? styles.glitch : {}),
-          }}
-        >
-          HELLO 👋
-        </div>
+      <p className="crazy-sub">
+        WHAT THE F*CK IS THIS PAGE 😈
+      </p>
 
-        <div style={styles.subText}>
-          welcome to chaos ⚡
-        </div>
+      <style>{`
+        .crazy-page {
+          height: 100vh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(
+            270deg,
+            #020617,
+            #0f172a,
+            #020617
+          );
+          background-size: 600% 600%;
+          animation: bgMove 10s ease infinite;
+          position: relative;
+        }
 
-        <button style={styles.button}>
-          ENTER 🚀
-        </button>
-      </div>
+        @keyframes bgMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .bg-logo {
+          position: absolute;
+          inset: 0;
+          background-image: url(${bgImage});
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 420px;
+          opacity: 0.08;
+          animation: spinFloat 20s linear infinite;
+        }
+
+        @keyframes spinFloat {
+          0% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(180deg) scale(1.1); }
+          100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .crazy-text {
+          font-size: 96px;
+          font-weight: 900;
+          color: #22d3ee;
+          text-shadow:
+            0 0 10px #22d3ee,
+            0 0 30px #818cf8,
+            0 0 60px #f472b6;
+          animation: shake 1.2s infinite alternate,
+                     pulse 2s infinite;
+          z-index: 1;
+        }
+
+        @keyframes shake {
+          0% { transform: translateX(0) rotate(0deg); }
+          25% { transform: translateX(-4px) rotate(-2deg); }
+          50% { transform: translateX(4px) rotate(2deg); }
+          75% { transform: translateX(-4px) rotate(-1deg); }
+          100% { transform: translateX(0) rotate(0deg); }
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+          100% { transform: scale(1); }
+        }
+
+        .crazy-sub {
+          margin-top: 12px;
+          font-size: 18px;
+          color: #94a3b8;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          animation: blink 1.5s infinite;
+          z-index: 1;
+        }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.2; }
+        }
+      `}</style>
     </div>
   );
 }
-
-const glow = "0 0 40px rgba(99,102,241,0.8)";
-
-const styles = {
-  page: {
-    position: "relative",
-    minHeight: "100vh",
-    overflow: "hidden",
-    background:
-      "radial-gradient(circle at top, #020617, #000000 70%)",
-    fontFamily: "'Inter', system-ui",
-  },
-
-  bgImage: {
-    position: "absolute",
-    inset: 0,
-    backgroundImage: `url(${bgImage})`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-    backgroundSize: "420px",
-    opacity: 0.08,
-    filter: "blur(1px)",
-    zIndex: 0,
-  },
-
-  centerWrap: {
-    position: "relative",
-    zIndex: 2,
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    textAlign: "center",
-  },
-
-  helloText: {
-    fontSize: "84px",
-    fontWeight: "900",
-    letterSpacing: "4px",
-    background:
-      "linear-gradient(90deg, #22d3ee, #818cf8, #f472b6)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    textShadow: glow,
-    animation: "pulse 2s infinite",
-    transition: "transform 0.2s",
-  },
-
-  glitch: {
-    transform: "skewX(-8deg) translateX(6px)",
-    textShadow:
-      "2px 0 red, -2px 0 cyan, 0 0 30px rgba(255,255,255,0.8)",
-  },
-
-  subText: {
-    marginTop: "14px",
-    fontSize: "18px",
-    color: "#94a3b8",
-    letterSpacing: "2px",
-    textTransform: "uppercase",
-  },
-
-  button: {
-    marginTop: "40px",
-    padding: "16px 44px",
-    fontSize: "18px",
-    fontWeight: "700",
-    borderRadius: "999px",
-    border: "none",
-    cursor: "pointer",
-    color: "#020617",
-    background:
-      "linear-gradient(90deg, #22d3ee, #818cf8)",
-    boxShadow: "0 0 30px rgba(129,140,248,0.8)",
-    transition: "all 0.25s ease",
-  },
-
-  orb1: {
-    position: "absolute",
-    width: "260px",
-    height: "260px",
-    background: "radial-gradient(circle, #22d3ee, transparent 70%)",
-    top: "10%",
-    left: "5%",
-    filter: "blur(40px)",
-    animation: "float 6s ease-in-out infinite",
-  },
-
-  orb2: {
-    position: "absolute",
-    width: "320px",
-    height: "320px",
-    background: "radial-gradient(circle, #818cf8, transparent 70%)",
-    bottom: "15%",
-    right: "10%",
-    filter: "blur(60px)",
-    animation: "float 8s ease-in-out infinite reverse",
-  },
-
-  orb3: {
-    position: "absolute",
-    width: "180px",
-    height: "180px",
-    background: "radial-gradient(circle, #f472b6, transparent 70%)",
-    top: "50%",
-    right: "30%",
-    filter: "blur(50px)",
-    animation: "float 7s ease-in-out infinite",
-  },
-};
 
 export default Hello;
