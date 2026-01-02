@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import reportBg from "../assets/report-bg.png"; // ✅ IMPORT IMAGE
 
 function AdminAnalysis() {
   const [adminId, setAdminId] = useState("");
@@ -81,58 +82,64 @@ function AdminAnalysis() {
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.title}>Admin Analysis</h1>
+      {/* 🔹 BACKGROUND IMAGE */}
+      <div style={styles.bgImage} />
 
-      {/* 🔍 SEARCH BAR */}
-      <div style={styles.searchBar}>
-        <input
-          placeholder="Enter Admin ID"
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          style={styles.input}
-        />
+      {/* 🔹 CONTENT */}
+      <div style={styles.content}>
+        <h1 style={styles.title}>Admin Analysis</h1>
 
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          style={styles.input}
-        />
+        {/* SEARCH BAR */}
+        <div style={styles.searchBar}>
+          <input
+            placeholder="Enter Admin ID"
+            value={adminId}
+            onChange={(e) => setAdminId(e.target.value)}
+            style={styles.input}
+          />
 
-        <button onClick={handleSearch} style={styles.searchBtn}>
-          {loading ? "Searching..." : "Search"}
-        </button>
-      </div>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            style={styles.input}
+          />
 
-      {error && <p style={styles.error}>{error}</p>}
-
-      {/* 🔹 CARDS GRID */}
-      {(adminResult || agentTotals) && (
-        <div style={styles.grid}>
-          {adminResult && (
-            <>
-              <Card label="Login Time" value={adminResult.login_time} color="#DBEAFE" />
-              <Card label="Logout Time" value={adminResult.logout_time} color="#EDE9FE" />
-            </>
-          )}
-
-          {agentTotals && (
-            <>
-              <Card label="Normal Orders" value={agentTotals.normal_order} color="#DCFCE7" />
-              <Card label="Scheduled Orders" value={agentTotals.schedule_order} color="#FAE8FF" />
-              <Card label="Assigned Orders" value={agentTotals.assign_orderr} color="#E0E7FF" />
-              <Card label="App Intent" value={agentTotals.app_intent} color="#FFE4E6" />
-              <Card label="Employee Cancel" value={agentTotals.employee_cancel} color="#F1F5F9" />
-              <Card label="Customer Cancel" value={agentTotals.customer_cancel} color="#FEE2E2" />
-            </>
-          )}
+          <button onClick={handleSearch} style={styles.searchBtn}>
+            {loading ? "Searching..." : "Search"}
+          </button>
         </div>
-      )}
+
+        {error && <p style={styles.error}>{error}</p>}
+
+        {/* CARDS */}
+        {(adminResult || agentTotals) && (
+          <div style={styles.grid}>
+            {adminResult && (
+              <>
+                <Card label="Login Time" value={adminResult.login_time} color="#DBEAFE" />
+                <Card label="Logout Time" value={adminResult.logout_time} color="#EDE9FE" />
+              </>
+            )}
+
+            {agentTotals && (
+              <>
+                <Card label="Normal Orders" value={agentTotals.normal_order} color="#DCFCE7" />
+                <Card label="Scheduled Orders" value={agentTotals.schedule_order} color="#FAE8FF" />
+                <Card label="Assigned Orders" value={agentTotals.assign_orderr} color="#E0E7FF" />
+                <Card label="App Intent" value={agentTotals.app_intent} color="#FFE4E6" />
+                <Card label="Employee Cancel" value={agentTotals.employee_cancel} color="#F1F5F9" />
+                <Card label="Customer Cancel" value={agentTotals.customer_cancel} color="#FEE2E2" />
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-/* 🔹 CARD COMPONENT */
+/* CARD */
 function Card({ label, value, color }) {
   return (
     <div style={{ ...styles.card, background: color }}>
@@ -142,19 +149,40 @@ function Card({ label, value, color }) {
   );
 }
 
-/* 🔹 STYLES */
+/* STYLES */
 const styles = {
   page: {
-    padding: "30px",
-    background: "#f8fafc",
+    position: "relative",
     minHeight: "100vh",
+    background: "#f8fafc",
+    overflow: "hidden",
   },
+
+  bgImage: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: `url(${reportBg})`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right bottom",
+    backgroundSize: "420px", // ✅ FIT, NOT FULL SCREEN
+    opacity: 0.12, // ✅ SLIGHTLY VISIBLE
+    zIndex: 0,
+    pointerEvents: "none",
+  },
+
+  content: {
+    position: "relative",
+    zIndex: 1,
+    padding: "30px",
+  },
+
   title: {
     fontSize: "28px",
     fontWeight: "800",
     marginBottom: "24px",
     color: "#0f172a",
   },
+
   searchBar: {
     display: "flex",
     gap: "12px",
@@ -166,14 +194,15 @@ const styles = {
     alignItems: "center",
     flexWrap: "wrap",
   },
+
   input: {
     padding: "10px 14px",
     borderRadius: "10px",
     border: "1px solid #cbd5f5",
     fontSize: "14px",
-    outline: "none",
     minWidth: "200px",
   },
+
   searchBtn: {
     background: "#2563eb",
     color: "white",
@@ -183,16 +212,19 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
   },
+
   error: {
     color: "#dc2626",
     marginBottom: "20px",
     fontWeight: "600",
   },
+
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: "20px",
   },
+
   card: {
     padding: "24px",
     borderRadius: "18px",
@@ -201,12 +233,14 @@ const styles = {
     flexDirection: "column",
     gap: "10px",
   },
+
   cardLabel: {
     fontSize: "13px",
     fontWeight: "700",
     color: "#475569",
     textTransform: "uppercase",
   },
+
   cardValue: {
     fontSize: "32px",
     fontWeight: "800",
