@@ -1,25 +1,18 @@
-import reportBg from "../assets/report-bg.png";
+import bgImage from "../assets/report-bg.png";
 
 function Hello() {
   return (
     <div style={styles.page}>
-      {/* 🔹 BACKGROUND IMAGE */}
+      {/* BACKGROUND IMAGE */}
       <div style={styles.bgImage} />
 
-      {/* 🔹 CONTENT */}
+      {/* CONTENT */}
       <div style={styles.content}>
-        <div style={styles.card}>
-          <h1 style={styles.text}>HELLO 👋</h1>
-          <p style={styles.subText}>Welcome to the Super Admin Panel</p>
-        </div>
+        HELLO 👋
       </div>
     </div>
   );
 }
-
-export default Hello;
-
-/* ================= STYLES ================= */
 
 const styles = {
   page: {
@@ -27,49 +20,28 @@ const styles = {
     minHeight: "100vh",
     background: "#f8fafc",
     overflow: "hidden",
-    fontFamily: "Inter, system-ui, sans-serif",
   },
 
-  /* 🔹 Background image like other pages */
   bgImage: {
     position: "absolute",
     inset: 0,
-    backgroundImage: `url(${reportBg})`,
+    backgroundImage: `url(${bgImage})`,
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    backgroundSize: "420px", // 👈 controlled size
-    opacity: 0.08, // 👈 visible but subtle
+    backgroundSize: "420px", // 👈 controlled size (not full cover)
+    opacity: 0.12,           // 👈 visible but very subtle
     zIndex: 0,
   },
 
   content: {
     position: "relative",
     zIndex: 1,
-    height: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  card: {
-    background: "rgba(255,255,255,0.85)",
-    padding: "60px 80px",
-    borderRadius: "24px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-    textAlign: "center",
-  },
-
-  text: {
     fontSize: "64px",
-    fontWeight: "900",
-    margin: 0,
+    fontWeight: "800",
+    textAlign: "center",
+    marginTop: "100px",
     color: "#0f172a",
   },
-
-  subText: {
-    marginTop: "12px",
-    fontSize: "18px",
-    fontWeight: "500",
-    color: "#64748b",
-  },
 };
+
+export default Hello;
