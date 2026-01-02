@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
-import reportBg from "../assets/report-bg.png"; // ✅ IMPORT IMAGE
+import bgImage from "../assets/report-bg.png";
 
 function AdminAnalysis() {
   const [adminId, setAdminId] = useState("");
@@ -83,7 +83,7 @@ function AdminAnalysis() {
   return (
     <div style={styles.page}>
       {/* 🔹 BACKGROUND IMAGE */}
-      <div style={styles.bgImage} />
+      <div style={styles.bgLayer} />
 
       {/* 🔹 CONTENT */}
       <div style={styles.content}>
@@ -112,7 +112,7 @@ function AdminAnalysis() {
 
         {error && <p style={styles.error}>{error}</p>}
 
-        {/* CARDS */}
+        {/* RESULT CARDS */}
         {(adminResult || agentTotals) && (
           <div style={styles.grid}>
             {adminResult && (
@@ -139,7 +139,7 @@ function AdminAnalysis() {
   );
 }
 
-/* CARD */
+/* 🔹 CARD */
 function Card({ label, value, color }) {
   return (
     <div style={{ ...styles.card, background: color }}>
@@ -149,7 +149,7 @@ function Card({ label, value, color }) {
   );
 }
 
-/* STYLES */
+/* 🔹 STYLES */
 const styles = {
   page: {
     position: "relative",
@@ -158,16 +158,15 @@ const styles = {
     overflow: "hidden",
   },
 
-  bgImage: {
+  bgLayer: {
     position: "absolute",
     inset: 0,
-    backgroundImage: `url(${reportBg})`,
+    backgroundImage: `url(${bgImage})`,
     backgroundRepeat: "no-repeat",
-    backgroundPosition: "right bottom",
-    backgroundSize: "420px", // ✅ FIT, NOT FULL SCREEN
-    opacity: 0.12, // ✅ SLIGHTLY VISIBLE
+    backgroundPosition: "center",
+    backgroundSize: "600px", // 🔥 image center + bigger
+    opacity: 0.08, // 🔥 slightly more visible
     zIndex: 0,
-    pointerEvents: "none",
   },
 
   content: {
@@ -190,7 +189,7 @@ const styles = {
     background: "#ffffff",
     padding: "16px",
     borderRadius: "14px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
     alignItems: "center",
     flexWrap: "wrap",
   },
@@ -228,7 +227,7 @@ const styles = {
   card: {
     padding: "24px",
     borderRadius: "18px",
-    boxShadow: "0 6px 12px rgba(0,0,0,0.05)",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
