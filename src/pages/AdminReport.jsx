@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import * as XLSX from "xlsx";
+import reportBg from "../assets/report-bg.png"; // ✅ IMPORTANT
 
 function AdminReport() {
   const [adminId, setAdminId] = useState("");
@@ -95,99 +96,120 @@ function AdminReport() {
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.heading}>Admin Report</h1>
+      {/* 🔹 BACKGROUND IMAGE */}
+      <div
+        style={{
+          ...styles.bgImage,
+          backgroundImage: `url(${reportBg})`,
+        }}
+      />
 
-      {/* FILTER CARD */}
-      <div style={styles.filterCard}>
-        <input
-          placeholder="Admin ID"
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          style={styles.input}
-        />
+      {/* 🔹 CONTENT */}
+      <div style={styles.content}>
+        <h1 style={styles.heading}>Admin Report</h1>
 
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          style={styles.input}
-        />
+        <div style={styles.filterCard}>
+          <input
+            placeholder="Admin ID"
+            value={adminId}
+            onChange={(e) => setAdminId(e.target.value)}
+            style={styles.input}
+          />
 
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          style={styles.input}
-        />
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            style={styles.input}
+          />
 
-        <button
-          onClick={handleSearch}
-          style={{
-            ...styles.primaryBtn,
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            style={styles.input}
+          />
+
+          <button
+            onClick={handleSearch}
+            style={{ ...styles.primaryBtn, opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+
+          {rows.length > 0 && (
+            <button onClick={downloadExcel} style={styles.secondaryBtn}>
+              ⬇ Download Excel
+            </button>
+          )}
+        </div>
+
+        {error && <div style={styles.error}>{error}</div>}
 
         {rows.length > 0 && (
-          <button onClick={downloadExcel} style={styles.secondaryBtn}>
-            ⬇ Download Excel
-          </button>
-        )}
-      </div>
-
-      {error && <div style={styles.error}>{error}</div>}
-
-      {/* TABLE */}
-      {rows.length > 0 && (
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                {Object.keys(rows[0]).map((h) => (
-                  <th key={h} style={styles.th}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={styles.tr}>
-                  {Object.values(r).map((v, idx) => (
-                    <td key={idx} style={styles.td}>
-                      {v}
-                    </td>
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  {Object.keys(rows[0]).map((h) => (
+                    <th key={h} style={styles.th}>{h}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i}>
+                    {Object.values(r).map((v, idx) => (
+                      <td key={idx} style={styles.td}>{v}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      {!loading && rows.length === 0 && (
-        <p style={styles.empty}>No data found</p>
-      )}
+        {!loading && rows.length === 0 && (
+          <p style={styles.empty}>No data found</p>
+        )}
+      </div>
     </div>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = {
   page: {
-    padding: "30px",
-    background: "#f8fafc",
+    position: "relative",
     minHeight: "100vh",
+    background: "#f8fafc",
+    overflow: "hidden",
+  },
+
+  bgImage: {
+    position: "absolute",
+    inset: 0,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.04, // 🔥 VERY SOFT
+    zIndex: 0,
+  },
+
+  content: {
+    position: "relative",
+    zIndex: 1,
+    padding: "30px",
     fontFamily: "Inter, system-ui, sans-serif",
   },
+
   heading: {
     fontSize: "28px",
     fontWeight: "800",
     marginBottom: "20px",
     color: "#0f172a",
   },
+
   filterCard: {
     display: "flex",
     gap: "12px",
@@ -199,14 +221,14 @@ const styles = {
     marginBottom: "24px",
     alignItems: "center",
   },
+
   input: {
     padding: "10px 14px",
     borderRadius: "10px",
     border: "1px solid #cbd5f5",
-    fontSize: "14px",
-    outline: "none",
     background: "#f8fafc",
   },
+
   primaryBtn: {
     background: "#2563eb",
     color: "white",
@@ -216,6 +238,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
+
   secondaryBtn: {
     background: "#16a34a",
     color: "white",
@@ -225,46 +248,44 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
+
   error: {
-    color: "#b91c1c",
     background: "#fee2e2",
+    color: "#991b1b",
     padding: "12px",
     borderRadius: "10px",
-    marginBottom: "20px",
     fontWeight: "600",
   },
+
   tableWrapper: {
     background: "#ffffff",
     borderRadius: "14px",
     overflowX: "auto",
     boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
   },
+
   table: {
     width: "100%",
     borderCollapse: "collapse",
   },
+
   th: {
     background: "#0f172a",
     color: "white",
     padding: "12px",
     fontSize: "13px",
     textAlign: "left",
-    position: "sticky",
-    top: 0,
   },
+
   td: {
     padding: "12px",
     borderBottom: "1px solid #e5e7eb",
-    fontSize: "14px",
     color: "#334155",
   },
-  tr: {
-    transition: "background 0.2s",
-  },
+
   empty: {
-    color: "#64748b",
-    fontSize: "15px",
     marginTop: "30px",
+    color: "#64748b",
   },
 };
 
