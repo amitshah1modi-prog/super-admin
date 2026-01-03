@@ -7,18 +7,10 @@ function Hello() {
   useEffect(() => {
     const text = document.querySelector(".explode-text");
     const container = document.querySelector(".pieces");
-    const screen = document.querySelector(".screen");
 
-    text.addEventListener("click", () => {
+    const explode = () => {
       if (exploded.current) return;
       exploded.current = true;
-
-      // SCREEN FLASH + FREEZE
-      screen.classList.add("flash", "shake", "slow");
-
-      setTimeout(() => {
-        screen.classList.remove("flash");
-      }, 120);
 
       const chars = text.innerText.split("");
       text.style.visibility = "hidden";
@@ -27,29 +19,43 @@ function Hello() {
         const span = document.createElement("span");
         span.innerText = char;
 
-        span.style.setProperty("--x", `${(Math.random() - 0.5) * 900}px`);
-        span.style.setProperty("--y", `${(Math.random() - 0.5) * 600}px`);
-        span.style.setProperty("--r", `${(Math.random() - 0.5) * 1080}deg`);
+        const x = (Math.random() - 0.5) * 900;
+        const y = (Math.random() - 0.5) * 600;
+        const r = (Math.random() - 0.5) * 1080;
+
+        span.style.setProperty("--x", `${x}px`);
+        span.style.setProperty("--y", `${y}px`);
+        span.style.setProperty("--r", `${r}deg`);
         span.style.animationDelay = `${i * 25}ms`;
 
         container.appendChild(span);
       });
 
+      // 🧬 REASSEMBLE AFTER CHAOS
       setTimeout(() => {
-        screen.classList.remove("slow");
-      }, 900);
-    });
+        container.classList.add("reassemble");
+      }, 1800);
+
+      // FINAL SNAP BACK
+      setTimeout(() => {
+        container.innerHTML = "";
+        text.style.visibility = "visible";
+        exploded.current = false;
+      }, 3200);
+    };
+
+    text.addEventListener("click", explode);
+    return () => text.removeEventListener("click", explode);
   }, []);
 
   return (
     <div className="screen">
-      <div className="crack" />
       <div className="logo" />
 
       <div className="center">
         <h1 className="explode-text">HELLO 👋</h1>
         <div className="pieces"></div>
-        <p className="hint">CLICK TO BREAK REALITY 💥</p>
+        <p className="hint">CLICK → DESTROY → REFORM 🧬</p>
       </div>
 
       <style>{`
@@ -61,47 +67,14 @@ function Hello() {
         .screen {
           height: 100vh;
           overflow: hidden;
-          background: radial-gradient(circle at top, #020617, black);
           display: flex;
           align-items: center;
           justify-content: center;
-          position: relative;
+          background: radial-gradient(circle at top, #020617, black);
           font-family: system-ui;
+          position: relative;
         }
 
-        /* FREEZE FRAME */
-        .slow * {
-          animation-duration: 2.5s !important;
-        }
-
-        /* FLASH */
-        .flash::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: white;
-          opacity: 0.8;
-          animation: flash 0.15s ease-out forwards;
-          z-index: 99;
-        }
-
-        @keyframes flash {
-          to { opacity: 0; }
-        }
-
-        /* CAMERA SHAKE */
-        .shake {
-          animation: shake 0.4s;
-        }
-
-        @keyframes shake {
-          10% { transform: translate(-6px, 4px); }
-          20% { transform: translate(6px, -4px); }
-          30% { transform: translate(-4px, -6px); }
-          40% { transform: translate(4px, 6px); }
-        }
-
-        /* BACKGROUND LOGO */
         .logo {
           position: absolute;
           inset: 0;
@@ -112,26 +85,7 @@ function Hello() {
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg) scale(1.15); }
-        }
-
-        /* CRACK OVERLAY */
-        .crack {
-          position: absolute;
-          inset: 0;
-          background:
-            repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 60px,
-              rgba(255,255,255,0.05) 62px
-            );
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .shake .crack {
-          opacity: 1;
+          to { transform: rotate(360deg) scale(1.1); }
         }
 
         .center {
@@ -154,7 +108,7 @@ function Hello() {
         }
 
         @keyframes pulse {
-          50% { transform: scale(1.1); }
+          50% { transform: scale(1.08); }
         }
 
         .pieces {
@@ -173,28 +127,38 @@ function Hello() {
           text-shadow:
             0 0 10px #22d3ee,
             0 0 40px #818cf8;
-          animation:
-            explode 0.8s ease-out forwards,
-            fall 1.2s ease-in forwards;
+          animation: explode 0.9s ease-out forwards;
         }
 
         @keyframes explode {
           to {
             transform:
               translate(var(--x), var(--y))
-              rotate(var(--r));
+              rotate(var(--r))
+              scale(0.6);
             opacity: 1;
+            filter: blur(1px);
           }
         }
 
-        /* GRAVITY DROP */
-        @keyframes fall {
-          to {
+        /* 🧬 UNHOLY REASSEMBLE */
+        .reassemble span {
+          animation: reassemble 1.2s ease-in forwards;
+        }
+
+        @keyframes reassemble {
+          from {
             transform:
-              translate(var(--x), 800px)
+              translate(var(--x), var(--y))
               rotate(var(--r))
-              scale(0.4);
-            opacity: 0;
+              scale(0.3);
+            opacity: 0.4;
+            filter: blur(3px);
+          }
+          to {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+            opacity: 1;
+            filter: blur(0);
           }
         }
 
@@ -207,7 +171,7 @@ function Hello() {
         }
 
         @keyframes blink {
-          50% { opacity: 0.25; }
+          50% { opacity: 0.3; }
         }
       `}</style>
     </div>
