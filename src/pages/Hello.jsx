@@ -3,22 +3,42 @@ import bgImage from "../assets/report-bg.png";
 
 function Hello() {
   const exploded = useRef(false);
-  const panicTimer = useRef(null);
+  const piecesRef = useRef(null);
+  const screenRef = useRef(null);
+  const keyBuffer = useRef([]);
+  const audioCtx = useRef(null);
+
+  /* 🔊 SIMPLE SYNTH SOUND (NO FILES) */
+  const beep = (freq = 180, dur = 0.08) => {
+    if (!audioCtx.current)
+      audioCtx.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
+    const ctx = audioCtx.current;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = "square";
+    gain.gain.value = 0.05;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + dur);
+  };
 
   useEffect(() => {
     const text = document.querySelector(".main-text");
-    const pieces = document.querySelector(".pieces");
-    const screen = document.querySelector(".screen");
+    const pieces = piecesRef.current;
+    const screen = screenRef.current;
 
-    /* 💥 EXPLOSION CORE */
+    /* 💥 EXPLODE */
     const explode = () => {
       if (exploded.current) return;
       exploded.current = true;
 
-      screen.classList.add("shake", "flash", "melt", "desync");
+      beep(90);
+      screen.classList.add("shake", "flash", "desync");
 
-      setTimeout(() => screen.classList.remove("flash"), 140);
-      setTimeout(() => screen.classList.remove("melt"), 600);
+      setTimeout(() => screen.classList.remove("flash"), 120);
 
       const chars = text.innerText.split("");
       text.style.visibility = "hidden";
@@ -27,19 +47,18 @@ function Hello() {
         const span = document.createElement("span");
         span.innerText = char;
 
-        const x = (Math.random() - 0.5) * 1200;
-        const y = (Math.random() - 0.5) * 900;
-        const r = (Math.random() - 0.5) * 1800;
-
-        span.style.setProperty("--x", `${x}px`);
-        span.style.setProperty("--y", `${y}px`);
-        span.style.setProperty("--r", `${r}deg`);
+        span.style.setProperty("--x", `${(Math.random() - 0.5) * 1200}px`);
+        span.style.setProperty("--y", `${(Math.random() - 0.5) * 900}px`);
+        span.style.setProperty("--r", `${(Math.random() - 0.5) * 1800}deg`);
         span.style.animationDelay = `${i * 20}ms`;
 
         pieces.appendChild(span);
       });
 
-      setTimeout(() => pieces.classList.add("reassemble"), 2000);
+      setTimeout(() => {
+        pieces.classList.add("reassemble");
+        beep(240);
+      }, 2000);
 
       setTimeout(() => {
         pieces.innerHTML = "";
@@ -47,60 +66,73 @@ function Hello() {
         text.style.visibility = "visible";
         exploded.current = false;
         screen.classList.remove("desync");
+        beep(120);
       }, 4200);
     };
 
-    /* 👁️ RANDOM POSSESSION */
-    const randomPanic = () => {
-      screen.classList.add("panic");
-      setTimeout(() => screen.classList.remove("panic"), 300);
-      panicTimer.current = setTimeout(randomPanic, 3500 + Math.random() * 4000);
+    /* ⏪ TIME REWIND (HOLD T) */
+    const rewind = (on) => {
+      screen.style.filter = on ? "invert(1) hue-rotate(180deg)" : "";
+      screen.style.animationDirection = on ? "reverse" : "normal";
     };
 
-    panicTimer.current = setTimeout(randomPanic, 3000);
+    /* 🧠 SECRET KEYS */
+    const onKey = (e) => {
+      beep(60);
+      keyBuffer.current.push(e.key);
+      keyBuffer.current = keyBuffer.current.slice(-10);
+
+      // KONAMI → GOD MODE
+      if (keyBuffer.current.join("").includes("ArrowUpArrowUpArrowDownArrowDown")) {
+        screen.classList.toggle("godmode");
+        beep(440);
+      }
+
+      if (e.key === "Escape") explode();
+      if (e.key === "b") screen.classList.toggle("bsod");
+      if (e.key === "t") rewind(true);
+    };
+
+    const onKeyUp = (e) => {
+      if (e.key === "t") rewind(false);
+    };
 
     text.addEventListener("click", explode);
-    window.addEventListener("keydown", (e) => e.key === "Escape" && explode());
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
 
-    return () => clearTimeout(panicTimer.current);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   }, []);
 
   return (
-    <div className="screen">
-      <div className="blink" />
+    <div className="screen" ref={screenRef}>
+      <div className="logo" />
       <div className="noise" />
       <div className="vignette" />
-      <div className="logo" />
-      <div className="panic-text">SYSTEM FAILURE</div>
 
       <div className="center">
         <h1 className="main-text">HELLO 👋</h1>
-        <div className="pieces" />
-        <p className="hint">CLICK / ESC — DO NOT TRUST THIS PAGE</p>
+        <div className="pieces" ref={piecesRef} />
+        <p className="hint">
+          CLICK / ESC → EXPLODE · T → TIME · ↑↑↓↓ → GOD · B → BSOD
+        </p>
+      </div>
+
+      <div className="bsod">
+        <h2>:(</h2>
+        <p>YOUR UI RAN INTO A PROBLEM AND NEEDS TO RESTART.</p>
+        <small>ERROR_CODE: REALITY_OVERFLOW</small>
       </div>
 
       <style>{`
         body {
           margin: 0;
           background: black;
-          cursor: none;
-        }
-
-        /* POSSESSED CURSOR */
-        body::after {
-          content: "";
-          position: fixed;
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: #22d3ee;
-          pointer-events: none;
-          mix-blend-mode: screen;
-          animation: cursorJitter 0.2s infinite;
-        }
-
-        @keyframes cursorJitter {
-          50% { transform: translate(2px, -2px); }
+          overflow: hidden;
+          cursor: crosshair;
         }
 
         .screen {
@@ -111,62 +143,62 @@ function Hello() {
           background: radial-gradient(circle at top, #020617, black);
           font-family: system-ui;
           position: relative;
-          overflow: hidden;
+          transition: filter 0.2s;
         }
 
-        /* DESYNC */
-        .desync {
-          filter: hue-rotate(40deg);
+        /* GOD MODE */
+        .godmode {
+          animation: god 0.4s infinite;
         }
 
-        /* MELT */
-        .melt {
-          animation: melt 0.6s ease-in-out;
+        @keyframes god {
+          50% { filter: hue-rotate(90deg) saturate(2); }
         }
 
-        @keyframes melt {
-          50% { transform: scaleY(0.96) skewX(2deg); }
-        }
-
-        /* PANIC */
-        .panic {
-          animation: panic 0.3s;
-        }
-
-        @keyframes panic {
-          25% { transform: rotate(0.4deg); }
-          50% { transform: rotate(-0.4deg); }
-        }
-
-        /* BLINK */
-        .blink {
+        /* BSOD */
+        .bsod {
           position: absolute;
           inset: 0;
-          background: black;
-          opacity: 0;
-          animation: blink 8s infinite;
+          background: #0050ef;
+          color: white;
+          padding: 80px;
+          display: none;
+          z-index: 99;
+          font-family: monospace;
+        }
+
+        .bsod h2 {
+          font-size: 64px;
+          margin-bottom: 20px;
+        }
+
+        .bsod p {
+          font-size: 20px;
+        }
+
+        .bsod small {
+          opacity: 0.7;
+        }
+
+        .bsod ~ * {
           pointer-events: none;
-          z-index: 8;
         }
 
-        @keyframes blink {
-          95% { opacity: 0; }
-          96% { opacity: 1; }
-          100% { opacity: 0; }
+        .screen.bsod .bsod {
+          display: block;
         }
 
-        /* LOGO */
         .logo {
           position: absolute;
           inset: 0;
           background: url(${bgImage}) center no-repeat;
           background-size: 360px;
           opacity: 0.04;
-          animation: spin 22s linear infinite;
+          animation: spin 20s linear infinite;
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg) scale(1.25); }
+          to { transform: rotate(360deg) scale(1.2); }
         }
 
         .noise {
@@ -215,6 +247,35 @@ function Hello() {
           50% { transform: scale(1.1); }
         }
 
+        .shake {
+          animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+          10% { transform: translate(-6px, 4px); }
+          20% { transform: translate(6px, -4px); }
+          30% { transform: translate(-4px, -6px); }
+          40% { transform: translate(4px, 6px); }
+        }
+
+        .flash::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: white;
+          opacity: 0.9;
+          animation: flash 0.15s forwards;
+          z-index: 20;
+        }
+
+        @keyframes flash {
+          to { opacity: 0; }
+        }
+
+        .desync {
+          filter: hue-rotate(40deg);
+        }
+
         .pieces {
           position: absolute;
           top: 0;
@@ -259,32 +320,15 @@ function Hello() {
           }
         }
 
-        .panic-text {
-          position: absolute;
-          top: 40px;
-          font-size: 12px;
-          letter-spacing: 4px;
-          color: red;
-          opacity: 0;
-          animation: panicText 6s infinite;
-          z-index: 9;
-        }
-
-        @keyframes panicText {
-          85% { opacity: 0; }
-          90% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-
         .hint {
-          margin-top: 16px;
+          margin-top: 14px;
           font-size: 11px;
           letter-spacing: 3px;
           color: #94a3b8;
-          animation: blinkHint 1.5s infinite;
+          animation: blink 1.4s infinite;
         }
 
-        @keyframes blinkHint {
+        @keyframes blink {
           50% { opacity: 0.2; }
         }
       `}</style>
