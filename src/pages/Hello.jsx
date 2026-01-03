@@ -5,12 +5,17 @@ function Hello() {
   const exploded = useRef(false);
 
   useEffect(() => {
-    const text = document.querySelector(".explode-text");
-    const container = document.querySelector(".pieces");
+    const text = document.querySelector(".main-text");
+    const pieces = document.querySelector(".pieces");
+    const screen = document.querySelector(".screen");
 
     const explode = () => {
       if (exploded.current) return;
       exploded.current = true;
+
+      screen.classList.add("shake", "flash");
+
+      setTimeout(() => screen.classList.remove("flash"), 120);
 
       const chars = text.innerText.split("");
       text.style.visibility = "hidden";
@@ -28,17 +33,18 @@ function Hello() {
         span.style.setProperty("--r", `${r}deg`);
         span.style.animationDelay = `${i * 25}ms`;
 
-        container.appendChild(span);
+        pieces.appendChild(span);
       });
 
-      // 🧬 REASSEMBLE AFTER CHAOS
+      // 🧬 REASSEMBLE
       setTimeout(() => {
-        container.classList.add("reassemble");
-      }, 1800);
+        pieces.classList.add("reassemble");
+      }, 1600);
 
-      // FINAL SNAP BACK
+      // 🔁 RESET
       setTimeout(() => {
-        container.innerHTML = "";
+        pieces.innerHTML = "";
+        pieces.classList.remove("reassemble");
         text.style.visibility = "visible";
         exploded.current = false;
       }, 3200);
@@ -50,12 +56,14 @@ function Hello() {
 
   return (
     <div className="screen">
+      <div className="noise" />
+      <div className="vignette" />
       <div className="logo" />
 
       <div className="center">
-        <h1 className="explode-text">HELLO 👋</h1>
-        <div className="pieces"></div>
-        <p className="hint">CLICK → DESTROY → REFORM 🧬</p>
+        <h1 className="main-text">HELLO 👋</h1>
+        <div className="pieces" />
+        <p className="hint">CLICK → DESTROY → REFORM</p>
       </div>
 
       <style>{`
@@ -75,6 +83,7 @@ function Hello() {
           position: relative;
         }
 
+        /* BACKGROUND LOGO */
         .logo {
           position: absolute;
           inset: 0;
@@ -85,7 +94,34 @@ function Hello() {
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg) scale(1.1); }
+          to { transform: rotate(360deg) scale(1.15); }
+        }
+
+        /* FILM GRAIN */
+        .noise {
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,0.03),
+            rgba(255,255,255,0.03) 1px,
+            transparent 1px,
+            transparent 2px
+          );
+          animation: noise 0.2s infinite;
+          pointer-events: none;
+        }
+
+        @keyframes noise {
+          50% { transform: translate(-1px, 1px); }
+        }
+
+        /* VIGNETTE */
+        .vignette {
+          position: absolute;
+          inset: 0;
+          box-shadow: inset 0 0 200px black;
+          pointer-events: none;
         }
 
         .center {
@@ -94,12 +130,13 @@ function Hello() {
           z-index: 2;
         }
 
-        .explode-text {
+        /* MAIN TEXT */
+        .main-text {
           font-size: 96px;
           font-weight: 900;
-          color: #22d3ee;
           cursor: pointer;
           user-select: none;
+          color: #22d3ee;
           text-shadow:
             0 0 10px #22d3ee,
             0 0 40px #818cf8,
@@ -111,6 +148,34 @@ function Hello() {
           50% { transform: scale(1.08); }
         }
 
+        /* SHAKE */
+        .shake {
+          animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+          10% { transform: translate(-6px, 4px); }
+          20% { transform: translate(6px, -4px); }
+          30% { transform: translate(-4px, -6px); }
+          40% { transform: translate(4px, 6px); }
+        }
+
+        /* FLASH */
+        .flash::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: white;
+          opacity: 0.9;
+          animation: flash 0.15s forwards;
+          z-index: 10;
+        }
+
+        @keyframes flash {
+          to { opacity: 0; }
+        }
+
+        /* PIECES */
         .pieces {
           position: absolute;
           top: 0;
@@ -136,12 +201,11 @@ function Hello() {
               translate(var(--x), var(--y))
               rotate(var(--r))
               scale(0.6);
-            opacity: 1;
             filter: blur(1px);
           }
         }
 
-        /* 🧬 UNHOLY REASSEMBLE */
+        /* REASSEMBLE */
         .reassemble span {
           animation: reassemble 1.2s ease-in forwards;
         }
@@ -152,12 +216,10 @@ function Hello() {
               translate(var(--x), var(--y))
               rotate(var(--r))
               scale(0.3);
-            opacity: 0.4;
             filter: blur(3px);
           }
           to {
             transform: translate(0, 0) rotate(0deg) scale(1);
-            opacity: 1;
             filter: blur(0);
           }
         }
@@ -179,3 +241,4 @@ function Hello() {
 }
 
 export default Hello;
+
