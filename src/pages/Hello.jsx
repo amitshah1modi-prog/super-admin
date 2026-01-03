@@ -3,19 +3,22 @@ import bgImage from "../assets/report-bg.png";
 
 function Hello() {
   const exploded = useRef(false);
-  const idleTimer = useRef(null);
+  const panicTimer = useRef(null);
 
   useEffect(() => {
     const text = document.querySelector(".main-text");
     const pieces = document.querySelector(".pieces");
     const screen = document.querySelector(".screen");
 
+    /* 💥 EXPLOSION CORE */
     const explode = () => {
       if (exploded.current) return;
       exploded.current = true;
 
-      screen.classList.add("shake", "flash", "corrupt");
-      setTimeout(() => screen.classList.remove("flash", "corrupt"), 160);
+      screen.classList.add("shake", "flash", "melt", "desync");
+
+      setTimeout(() => screen.classList.remove("flash"), 140);
+      setTimeout(() => screen.classList.remove("melt"), 600);
 
       const chars = text.innerText.split("");
       text.style.visibility = "hidden";
@@ -24,74 +27,80 @@ function Hello() {
         const span = document.createElement("span");
         span.innerText = char;
 
-        const x = (Math.random() - 0.5) * 1000;
-        const y = (Math.random() - 0.5) * 700;
-        const r = (Math.random() - 0.5) * 1440;
+        const x = (Math.random() - 0.5) * 1200;
+        const y = (Math.random() - 0.5) * 900;
+        const r = (Math.random() - 0.5) * 1800;
 
         span.style.setProperty("--x", `${x}px`);
         span.style.setProperty("--y", `${y}px`);
         span.style.setProperty("--r", `${r}deg`);
-        span.style.animationDelay = `${i * 25}ms`;
+        span.style.animationDelay = `${i * 20}ms`;
 
         pieces.appendChild(span);
       });
 
-      setTimeout(() => pieces.classList.add("reassemble"), 1800);
+      setTimeout(() => pieces.classList.add("reassemble"), 2000);
 
       setTimeout(() => {
         pieces.innerHTML = "";
         pieces.classList.remove("reassemble");
         text.style.visibility = "visible";
         exploded.current = false;
-      }, 3600);
+        screen.classList.remove("desync");
+      }, 4200);
     };
 
-    const resetIdle = () => {
-      screen.classList.remove("idle");
-      clearTimeout(idleTimer.current);
-      idleTimer.current = setTimeout(() => {
-        screen.classList.add("idle");
-      }, 2500);
+    /* 👁️ RANDOM POSSESSION */
+    const randomPanic = () => {
+      screen.classList.add("panic");
+      setTimeout(() => screen.classList.remove("panic"), 300);
+      panicTimer.current = setTimeout(randomPanic, 3500 + Math.random() * 4000);
     };
 
-    const keyChaos = (e) => {
-      if (e.key === "Escape") explode();
-      if (e.key === "r") screen.classList.toggle("red-alert");
-      if (e.key === "g") screen.classList.toggle("glitch-world");
-    };
+    panicTimer.current = setTimeout(randomPanic, 3000);
 
     text.addEventListener("click", explode);
-    window.addEventListener("mousemove", resetIdle);
-    window.addEventListener("keydown", keyChaos);
+    window.addEventListener("keydown", (e) => e.key === "Escape" && explode());
 
-    resetIdle();
-
-    return () => {
-      text.removeEventListener("click", explode);
-      window.removeEventListener("mousemove", resetIdle);
-      window.removeEventListener("keydown", keyChaos);
-    };
+    return () => clearTimeout(panicTimer.current);
   }, []);
 
   return (
-    <div className="screen idle">
+    <div className="screen">
+      <div className="blink" />
       <div className="noise" />
       <div className="vignette" />
       <div className="logo" />
+      <div className="panic-text">SYSTEM FAILURE</div>
 
       <div className="center">
         <h1 className="main-text">HELLO 👋</h1>
         <div className="pieces" />
-        <p className="hint">
-          CLICK / ESC → EXPLODE · R → RED · G → GLITCH
-        </p>
+        <p className="hint">CLICK / ESC — DO NOT TRUST THIS PAGE</p>
       </div>
 
       <style>{`
         body {
           margin: 0;
           background: black;
-          overflow: hidden;
+          cursor: none;
+        }
+
+        /* POSSESSED CURSOR */
+        body::after {
+          content: "";
+          position: fixed;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #22d3ee;
+          pointer-events: none;
+          mix-blend-mode: screen;
+          animation: cursorJitter 0.2s infinite;
+        }
+
+        @keyframes cursorJitter {
+          50% { transform: translate(2px, -2px); }
         }
 
         .screen {
@@ -102,129 +111,108 @@ function Hello() {
           background: radial-gradient(circle at top, #020617, black);
           font-family: system-ui;
           position: relative;
-          transition: transform 0.3s;
+          overflow: hidden;
         }
 
-        /* IDLE BREATHING */
-        .idle {
-          animation: breathe 3s infinite;
+        /* DESYNC */
+        .desync {
+          filter: hue-rotate(40deg);
         }
 
-        @keyframes breathe {
-          50% { transform: scale(1.02); }
+        /* MELT */
+        .melt {
+          animation: melt 0.6s ease-in-out;
         }
 
-        /* GLITCH WORLD */
-        .glitch-world {
-          animation: worldGlitch 0.4s infinite;
+        @keyframes melt {
+          50% { transform: scaleY(0.96) skewX(2deg); }
         }
 
-        @keyframes worldGlitch {
-          25% { transform: skewX(2deg); }
-          50% { transform: skewY(-2deg); }
+        /* PANIC */
+        .panic {
+          animation: panic 0.3s;
         }
 
-        /* RED ALERT */
-        .red-alert::before {
-          content: "";
+        @keyframes panic {
+          25% { transform: rotate(0.4deg); }
+          50% { transform: rotate(-0.4deg); }
+        }
+
+        /* BLINK */
+        .blink {
           position: absolute;
           inset: 0;
-          background: rgba(255,0,0,0.12);
-          animation: redPulse 0.8s infinite;
-          z-index: 5;
+          background: black;
+          opacity: 0;
+          animation: blink 8s infinite;
+          pointer-events: none;
+          z-index: 8;
         }
 
-        @keyframes redPulse {
-          50% { opacity: 0.35; }
+        @keyframes blink {
+          95% { opacity: 0; }
+          96% { opacity: 1; }
+          100% { opacity: 0; }
         }
 
-        /* CORRUPTION FLASH */
-        .corrupt::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: red;
-          opacity: 0.6;
-          animation: flash 0.15s forwards;
-          z-index: 10;
-        }
-
-        @keyframes flash {
-          to { opacity: 0; }
-        }
-
-        /* BACKGROUND LOGO */
+        /* LOGO */
         .logo {
           position: absolute;
           inset: 0;
           background: url(${bgImage}) center no-repeat;
-          background-size: 380px;
+          background-size: 360px;
           opacity: 0.04;
-          animation: spin 20s linear infinite;
+          animation: spin 22s linear infinite;
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg) scale(1.2); }
+          to { transform: rotate(360deg) scale(1.25); }
         }
 
-        /* FILM GRAIN */
         .noise {
           position: absolute;
           inset: 0;
           background: repeating-linear-gradient(
             0deg,
-            rgba(255,255,255,0.03),
-            rgba(255,255,255,0.03) 1px,
+            rgba(255,255,255,0.025),
+            rgba(255,255,255,0.025) 1px,
             transparent 1px,
             transparent 2px
           );
-          animation: noise 0.18s infinite;
-          pointer-events: none;
+          animation: noise 0.15s infinite;
         }
 
         @keyframes noise {
-          50% { transform: translate(-1px, 1px); }
+          50% { transform: translate(-1px,1px); }
         }
 
         .vignette {
           position: absolute;
           inset: 0;
-          box-shadow: inset 0 0 220px black;
-          pointer-events: none;
+          box-shadow: inset 0 0 260px black;
         }
 
         .center {
           position: relative;
           text-align: center;
-          z-index: 6;
+          z-index: 10;
         }
 
         .main-text {
           font-size: 96px;
           font-weight: 900;
-          cursor: pointer;
           color: #22d3ee;
+          cursor: pointer;
           user-select: none;
           text-shadow:
             0 0 10px #22d3ee,
             0 0 40px #818cf8,
             0 0 80px #f472b6;
-          animation: pulse 1.2s infinite;
+          animation: pulse 1.1s infinite;
         }
 
         @keyframes pulse {
-          50% { transform: scale(1.08); }
-        }
-
-        .shake {
-          animation: shake 0.4s;
-        }
-
-        @keyframes shake {
-          10% { transform: translate(-6px, 4px); }
-          20% { transform: translate(6px, -4px); }
-          30% { transform: translate(-4px, -6px); }
-          40% { transform: translate(4px, 6px); }
+          50% { transform: scale(1.1); }
         }
 
         .pieces {
@@ -248,13 +236,13 @@ function Hello() {
             transform:
               translate(var(--x), var(--y))
               rotate(var(--r))
-              scale(0.6);
+              scale(0.5);
             filter: blur(1px);
           }
         }
 
         .reassemble span {
-          animation: reassemble 1.3s ease-in forwards;
+          animation: reassemble 1.4s ease-in forwards;
         }
 
         @keyframes reassemble {
@@ -263,7 +251,7 @@ function Hello() {
               translate(var(--x), var(--y))
               rotate(var(--r))
               scale(0.3);
-            filter: blur(3px);
+            filter: blur(4px);
           }
           to {
             transform: translate(0,0) rotate(0) scale(1);
@@ -271,16 +259,33 @@ function Hello() {
           }
         }
 
-        .hint {
-          margin-top: 18px;
+        .panic-text {
+          position: absolute;
+          top: 40px;
           font-size: 12px;
-          letter-spacing: 3px;
-          color: #94a3b8;
-          animation: blink 1.4s infinite;
+          letter-spacing: 4px;
+          color: red;
+          opacity: 0;
+          animation: panicText 6s infinite;
+          z-index: 9;
         }
 
-        @keyframes blink {
-          50% { opacity: 0.25; }
+        @keyframes panicText {
+          85% { opacity: 0; }
+          90% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+
+        .hint {
+          margin-top: 16px;
+          font-size: 11px;
+          letter-spacing: 3px;
+          color: #94a3b8;
+          animation: blinkHint 1.5s infinite;
+        }
+
+        @keyframes blinkHint {
+          50% { opacity: 0.2; }
         }
       `}</style>
     </div>
