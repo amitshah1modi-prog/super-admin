@@ -3,6 +3,7 @@ import bgImage from "../assets/report-bg.png";
 
 function Hello() {
   const exploded = useRef(false);
+  const idleTimer = useRef(null);
 
   useEffect(() => {
     const text = document.querySelector(".main-text");
@@ -13,9 +14,8 @@ function Hello() {
       if (exploded.current) return;
       exploded.current = true;
 
-      screen.classList.add("shake", "flash");
-
-      setTimeout(() => screen.classList.remove("flash"), 120);
+      screen.classList.add("shake", "flash", "corrupt");
+      setTimeout(() => screen.classList.remove("flash", "corrupt"), 160);
 
       const chars = text.innerText.split("");
       text.style.visibility = "hidden";
@@ -24,9 +24,9 @@ function Hello() {
         const span = document.createElement("span");
         span.innerText = char;
 
-        const x = (Math.random() - 0.5) * 900;
-        const y = (Math.random() - 0.5) * 600;
-        const r = (Math.random() - 0.5) * 1080;
+        const x = (Math.random() - 0.5) * 1000;
+        const y = (Math.random() - 0.5) * 700;
+        const r = (Math.random() - 0.5) * 1440;
 
         span.style.setProperty("--x", `${x}px`);
         span.style.setProperty("--y", `${y}px`);
@@ -36,26 +36,45 @@ function Hello() {
         pieces.appendChild(span);
       });
 
-      // 🧬 REASSEMBLE
-      setTimeout(() => {
-        pieces.classList.add("reassemble");
-      }, 1600);
+      setTimeout(() => pieces.classList.add("reassemble"), 1800);
 
-      // 🔁 RESET
       setTimeout(() => {
         pieces.innerHTML = "";
         pieces.classList.remove("reassemble");
         text.style.visibility = "visible";
         exploded.current = false;
-      }, 3200);
+      }, 3600);
+    };
+
+    const resetIdle = () => {
+      screen.classList.remove("idle");
+      clearTimeout(idleTimer.current);
+      idleTimer.current = setTimeout(() => {
+        screen.classList.add("idle");
+      }, 2500);
+    };
+
+    const keyChaos = (e) => {
+      if (e.key === "Escape") explode();
+      if (e.key === "r") screen.classList.toggle("red-alert");
+      if (e.key === "g") screen.classList.toggle("glitch-world");
     };
 
     text.addEventListener("click", explode);
-    return () => text.removeEventListener("click", explode);
+    window.addEventListener("mousemove", resetIdle);
+    window.addEventListener("keydown", keyChaos);
+
+    resetIdle();
+
+    return () => {
+      text.removeEventListener("click", explode);
+      window.removeEventListener("mousemove", resetIdle);
+      window.removeEventListener("keydown", keyChaos);
+    };
   }, []);
 
   return (
-    <div className="screen">
+    <div className="screen idle">
       <div className="noise" />
       <div className="vignette" />
       <div className="logo" />
@@ -63,24 +82,75 @@ function Hello() {
       <div className="center">
         <h1 className="main-text">HELLO 👋</h1>
         <div className="pieces" />
-        <p className="hint">CLICK → DESTROY → REFORM</p>
+        <p className="hint">
+          CLICK / ESC → EXPLODE · R → RED · G → GLITCH
+        </p>
       </div>
 
       <style>{`
         body {
           margin: 0;
           background: black;
+          overflow: hidden;
         }
 
         .screen {
           height: 100vh;
-          overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
           background: radial-gradient(circle at top, #020617, black);
           font-family: system-ui;
           position: relative;
+          transition: transform 0.3s;
+        }
+
+        /* IDLE BREATHING */
+        .idle {
+          animation: breathe 3s infinite;
+        }
+
+        @keyframes breathe {
+          50% { transform: scale(1.02); }
+        }
+
+        /* GLITCH WORLD */
+        .glitch-world {
+          animation: worldGlitch 0.4s infinite;
+        }
+
+        @keyframes worldGlitch {
+          25% { transform: skewX(2deg); }
+          50% { transform: skewY(-2deg); }
+        }
+
+        /* RED ALERT */
+        .red-alert::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(255,0,0,0.12);
+          animation: redPulse 0.8s infinite;
+          z-index: 5;
+        }
+
+        @keyframes redPulse {
+          50% { opacity: 0.35; }
+        }
+
+        /* CORRUPTION FLASH */
+        .corrupt::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: red;
+          opacity: 0.6;
+          animation: flash 0.15s forwards;
+          z-index: 10;
+        }
+
+        @keyframes flash {
+          to { opacity: 0; }
         }
 
         /* BACKGROUND LOGO */
@@ -89,12 +159,12 @@ function Hello() {
           inset: 0;
           background: url(${bgImage}) center no-repeat;
           background-size: 380px;
-          opacity: 0.05;
-          animation: spin 18s linear infinite;
+          opacity: 0.04;
+          animation: spin 20s linear infinite;
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg) scale(1.15); }
+          to { transform: rotate(360deg) scale(1.2); }
         }
 
         /* FILM GRAIN */
@@ -108,7 +178,7 @@ function Hello() {
             transparent 1px,
             transparent 2px
           );
-          animation: noise 0.2s infinite;
+          animation: noise 0.18s infinite;
           pointer-events: none;
         }
 
@@ -116,27 +186,25 @@ function Hello() {
           50% { transform: translate(-1px, 1px); }
         }
 
-        /* VIGNETTE */
         .vignette {
           position: absolute;
           inset: 0;
-          box-shadow: inset 0 0 200px black;
+          box-shadow: inset 0 0 220px black;
           pointer-events: none;
         }
 
         .center {
           position: relative;
           text-align: center;
-          z-index: 2;
+          z-index: 6;
         }
 
-        /* MAIN TEXT */
         .main-text {
           font-size: 96px;
           font-weight: 900;
           cursor: pointer;
-          user-select: none;
           color: #22d3ee;
+          user-select: none;
           text-shadow:
             0 0 10px #22d3ee,
             0 0 40px #818cf8,
@@ -148,7 +216,6 @@ function Hello() {
           50% { transform: scale(1.08); }
         }
 
-        /* SHAKE */
         .shake {
           animation: shake 0.4s;
         }
@@ -160,22 +227,6 @@ function Hello() {
           40% { transform: translate(4px, 6px); }
         }
 
-        /* FLASH */
-        .flash::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: white;
-          opacity: 0.9;
-          animation: flash 0.15s forwards;
-          z-index: 10;
-        }
-
-        @keyframes flash {
-          to { opacity: 0; }
-        }
-
-        /* PIECES */
         .pieces {
           position: absolute;
           top: 0;
@@ -189,9 +240,6 @@ function Hello() {
           font-size: 96px;
           font-weight: 900;
           color: #22d3ee;
-          text-shadow:
-            0 0 10px #22d3ee,
-            0 0 40px #818cf8;
           animation: explode 0.9s ease-out forwards;
         }
 
@@ -205,9 +253,8 @@ function Hello() {
           }
         }
 
-        /* REASSEMBLE */
         .reassemble span {
-          animation: reassemble 1.2s ease-in forwards;
+          animation: reassemble 1.3s ease-in forwards;
         }
 
         @keyframes reassemble {
@@ -219,21 +266,21 @@ function Hello() {
             filter: blur(3px);
           }
           to {
-            transform: translate(0, 0) rotate(0deg) scale(1);
+            transform: translate(0,0) rotate(0) scale(1);
             filter: blur(0);
           }
         }
 
         .hint {
           margin-top: 18px;
-          font-size: 14px;
+          font-size: 12px;
           letter-spacing: 3px;
           color: #94a3b8;
           animation: blink 1.4s infinite;
         }
 
         @keyframes blink {
-          50% { opacity: 0.3; }
+          50% { opacity: 0.25; }
         }
       `}</style>
     </div>
@@ -241,4 +288,3 @@ function Hello() {
 }
 
 export default Hello;
-
